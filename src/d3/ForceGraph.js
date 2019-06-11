@@ -78,9 +78,6 @@ const ForceGraph = (el, data) => {
             .attr("cx", d => d.x)
             .attr("cy", d => d.y);
         });
-
-    console.log("Should start??", data)
-
 }
 
 export default ForceGraph
