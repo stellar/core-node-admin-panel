@@ -2,10 +2,10 @@
 # core-node-admin-panel
 
 ## Proposal
-**Who**: For people running validation nodes
-**Why**: It’s difficult to set up and understand whether you have a robust node, or if it’s fragile
-**What**: A UI admin tool set to understand the health and risks of your node, along with hints on how to strengthen it.
-**How**: Create views and analyses to help surface common detectable, but perhaps non obvious weak points.
+- **Who**: For people running validation nodes
+- **Why**: It’s difficult to set up and understand whether you have a robust node, or if it’s fragile
+- **What**: A UI admin tool set to understand the health and risks of your node, along with hints on how to strengthen it.
+- **How**: Create views and analyses to help surface common detectable, but perhaps non obvious weak points.
 
 ## Phase 1
 
