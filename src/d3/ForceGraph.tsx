@@ -1,8 +1,9 @@
 import * as d3 from "d3";
 import { GraphData, GraphNode, GraphLink } from "../GraphTypes";
 
-// Strength of each body pushign against each other
-const MANYBODY_STRENGTH = -700;
+const SimValues = {
+  ManyBodyStrength: -700
+};
 
 const NodeStyles = {
   radius: 6,
@@ -52,7 +53,7 @@ const ForceGraph = (el: SVGSVGElement, data: GraphData) => {
   const simulation: d3.Simulation<SimNode, SimLink> = d3
     .forceSimulation(nodes)
     .force("link", d3.forceLink<SimNode, SimLink>(links).id(n => n.id))
-    .force("charge", d3.forceManyBody().strength(MANYBODY_STRENGTH))
+    .force("charge", d3.forceManyBody().strength(SimValues.ManyBodyStrength))
     .force("x", d3.forceX(w / 2))
     .force("y", d3.forceY(h / 2));
 
