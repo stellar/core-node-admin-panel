@@ -1,20 +1,17 @@
 import React, { useRef, useEffect } from 'react'
-import { GraphData } from '../GraphTypes'
 import ForceGraph from '../d3/ForceGraph'
+import dummydata from '../dummydata'
 
-interface NodeGraphProps {
-    data ?: GraphData
-}
-const NodeGraph = (props : NodeGraphProps) => {
+const NodeGraph = () => {
     const ref = useRef<SVGSVGElement>(null)
     useEffect(() => {
-        if (ref && ref.current ) {
-            ForceGraph(ref.current, props.data)
+        if ( ref && ref.current ) {
+            ForceGraph(ref.current, dummydata)
         }
     })
     return <div>
         <h1>Stellar Node Graph</h1>
-        <svg ref={ref} />
+        <svg width={640} height={480} ref={ref} />
     </div>
 }
 
