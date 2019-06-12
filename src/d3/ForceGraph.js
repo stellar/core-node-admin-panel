@@ -1,100 +1,100 @@
-import * as d3 from 'd3'
-import { GraphData } from '../GraphTypes'
+import * as d3 from "d3";
+import { GraphData } from "../GraphTypes";
 
 const ForceGraph = (el, data) => {
-    if (!data) return
-    const svg = d3.select(el)
-    const w = svg.attr('width')
-    const h = svg.attr('height')
-    console.log(data)
-    const links = data.links
-    const nodes = data.nodes
-    console.log(nodes)
-    nodes.forEach(n => {
-        n.x = w / 2 + Math.random() * 50 - 25
-        n.y = h / 2 + Math.random() * 50 - 25
-    })
-    const simulation = d3.forceSimulation(nodes)
-        .force("link", d3.forceLink(links).id(d => d.id))
-        .force("charge", d3.forceManyBody().strength(-700))
-        .force("x", d3.forceX(svg.attr('width') / 2))
-        .force("y", d3.forceY(svg.attr('height') / 2))
+  if (!data) return;
+  const svg = d3.select(el);
+  const w = svg.attr("width");
+  const h = svg.attr("height");
+  console.log(data);
+  const links = data.links;
+  const nodes = data.nodes;
+  console.log(nodes);
+  nodes.forEach(n => {
+    n.x = w / 2 + Math.random() * 50 - 25;
+    n.y = h / 2 + Math.random() * 50 - 25;
+  });
+  const simulation = d3
+    .forceSimulation(nodes)
+    .force("link", d3.forceLink(links).id(d => d.id))
+    .force("charge", d3.forceManyBody().strength(-700))
+    .force("x", d3.forceX(svg.attr("width") / 2))
+    .force("y", d3.forceY(svg.attr("height") / 2));
 
+  const drag = simulation => {
+    const dragStart = d => {
+      if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x; // fix position to mouse
+      d.fy = d.y;
+    };
 
-    const drag = simulation => {
-        const dragStart = d => {
-            if (!d3.event.active) simulation.alphaTarget(0.3).restart()
-            d.fx = d.x // fix position to mouse
-            d.fy = d.y
-        }
+    const dragged = d => {
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
+    };
 
-        const dragged = d => {
-            d.fx = d3.event.x
-            d.fy = d3.event.y
-        }
+    const dragEnd = d => {
+      if (d3.event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    };
 
-        const dragEnd = d => {
-            if (d3.event.active) simulation.alphaTarget(0)
-            d.fx = null
-            d.fy = null
-        }
+    return d3
+      .drag()
+      .on("start", dragStart)
+      .on("drag", dragged)
+      .on("end", dragEnd);
+  };
 
-        return d3.drag()
-            .on('start', dragStart)
-            .on('drag', dragged)
-            .on('end', dragEnd)
-    }
-    
+  const link = svg
+    .append("g")
+    .attr("stroke", "#999")
+    .attr("stroke-opacity", 0.6)
+    .selectAll("line")
+    .data(links)
+    .join("line")
+    .attr("stroke-width", d => Math.sqrt(d.value));
 
-    const link = svg.append("g")
-        .attr("stroke", "#999")
-        .attr("stroke-opacity", 0.6)
-      .selectAll("line")
-      .data(links)
-      .join("line")
-        .attr("stroke-width", d => Math.sqrt(d.value))
+  const node = svg
+    .append("g")
+    .attr("stroke", "#fff")
+    .attr("stroke-width", 0.1)
+    .selectAll("circle")
+    .data(nodes)
+    .join("g");
 
-    const node = svg.append("g")
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 0.1)
-      .selectAll("circle")
-      .data(nodes)
-      .join("g")
-    
-    node
-        .attr("transform", d => `translate(${d.x}, ${d.y})`)
-        .call(drag(simulation))
-        .append("circle")
-            .attr("r", 6)
-            .attr("fill", "#555")
-            .attr('stroke-width', 3)
-            .attr('stroke', (d, i) => i === 0 ? 'green' : 'white')
-            
+  node
+    .attr("transform", d => `translate(${d.x}, ${d.y})`)
+    .call(drag(simulation))
+    .append("circle")
+    .attr("r", 6)
+    .attr("fill", "#555")
+    .attr("stroke-width", 3)
+    .attr("stroke", (d, i) => (i === 0 ? "green" : "white"));
 
-    node.on('mouseover', function(d) {
-        d3.select(this)
-            .append('text')
-            .text(d => d.id)
-            .style('z-index', 1000)
-            .attr("transform", "translate(10,-10)")
-    })
+  node.on("mouseover", function(d) {
+    d3.select(this)
+      .append("text")
+      .text(d => d.id)
+      .style("z-index", 1000)
+      .attr("transform", "translate(10,-10)");
+  });
 
-    node.on('mouseout', function(d) {
-        d3.select(this).select('text').remove()
-    })
+  node.on("mouseout", function(d) {
+    d3.select(this)
+      .select("text")
+      .remove();
+  });
 
+  simulation.on("tick", () => {
+    link
+      .attr("x1", d => d.source.x)
+      .attr("y1", d => d.source.y)
+      .attr("x2", d => d.target.x)
+      .attr("y2", d => d.target.y);
 
-    
-    simulation.on("tick", () => {
-        link
-            .attr("x1", d => d.source.x)
-            .attr("y1", d => d.source.y)
-            .attr("x2", d => d.target.x)
-            .attr("y2", d => d.target.y);
-    
-        node
-            .attr("transform", d => `translate(${d.x}, ${d.y})`) 
-        });
-}
+    node.attr("transform", d => `translate(${d.x}, ${d.y})`);
+  });
+};
 
-export default ForceGraph
+export default ForceGraph;
