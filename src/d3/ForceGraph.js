@@ -6,10 +6,10 @@ const ForceGraph = (el, data) => {
   const svg = d3.select(el);
   const w = svg.attr("width");
   const h = svg.attr("height");
-  console.log(data);
+
   const links = data.links;
   const nodes = data.nodes;
-  console.log(nodes);
+
   nodes.forEach(n => {
     n.x = w / 2 + Math.random() * 50 - 25;
     n.y = h / 2 + Math.random() * 50 - 25;
