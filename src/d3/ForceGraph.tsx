@@ -3,7 +3,21 @@ import { GraphData, GraphNode, GraphLink } from "../GraphTypes";
 
 // Strength of each body pushign against each other
 const MANYBODY_STRENGTH = -700;
-const DEFAULT_LINE_WIDTH = 0.2;
+
+const NodeStyles = {
+  radius: 6,
+  strokeWidth: 2,
+  fill: "#555",
+  stroke: (d: SimNode, i: number) => {
+    return i === 0 ? "green" : "white";
+  }
+};
+
+const LinkStyles = {
+  strokeWidth: 0.2,
+  stroke: "#333",
+  opacity: 0.5
+};
 
 interface SimNode extends d3.SimulationNodeDatum {
   x: number;
@@ -69,17 +83,15 @@ const ForceGraph = (el: SVGSVGElement, data: GraphData) => {
 
   const link = svg
     .append("g")
-    .attr("stroke", "#999")
-    .attr("stroke-opacity", 0.6)
     .selectAll("line")
     .data(links)
     .join("line")
-    .attr("stroke-width", DEFAULT_LINE_WIDTH);
+    .attr("stroke", LinkStyles.stroke)
+    .attr("stroke-opacity", LinkStyles.opacity)
+    .attr("stroke-width", LinkStyles.strokeWidth);
 
   const node = svg
     .append("g")
-    .attr("stroke", "#fff")
-    .attr("stroke-width", 0.1)
     .selectAll<SVGElement, SimNode>("circle")
     .data<SimNode>(nodes)
     .join("g");
@@ -88,17 +100,16 @@ const ForceGraph = (el: SVGSVGElement, data: GraphData) => {
     .attr("transform", d => `translate(${d.x}, ${d.y})`)
     .call(fixedDrag)
     .append("circle")
-    .attr("r", 6)
-    .attr("fill", "#555")
-    .attr("stroke-width", 3)
-    .attr("stroke", (d, i) => (i === 0 ? "green" : "white"));
+    .attr("r", NodeStyles.radius)
+    .attr("fill", NodeStyles.fill)
+    .attr("stroke-width", NodeStyles.strokeWidth)
+    .attr("stroke", NodeStyles.stroke);
 
   node.on("mouseover", function(d) {
     if (this != null) {
       d3.select<SVGElement, SimNode>(this as SVGElement)
         .append("text")
         .text((d: SimNode) => d.id)
-        .style("z-index", 1000)
         .attr("transform", "translate(10,-10)");
     }
   });
