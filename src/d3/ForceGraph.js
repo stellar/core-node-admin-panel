@@ -6,9 +6,10 @@ const ForceGraph = (el, data) => {
     const svg = d3.select(el)
     const w = svg.attr('width')
     const h = svg.attr('height')
-    const links = data.links.map(d => Object.create(d));
 
-    const nodes = data.nodes.map(d => Object.create(d));
+    const links = data.links
+    const nodes = data.nodes
+
     nodes.forEach(n => {
         n.x = w / 2 + Math.random() * 50 - 25
         n.y = h / 2 + Math.random() * 50 - 25
@@ -58,12 +59,29 @@ const ForceGraph = (el, data) => {
         .attr("stroke-width", 0.1)
       .selectAll("circle")
       .data(nodes)
-      .join("circle")
-        .attr("r", 6)
-        .attr("fill", "#555")
-        .attr("cx", d => d.x)
-        .attr("cy", d => d.y)
+      .join("g")
+    
+    node
+        .attr("transform", d => `translate(${d.x}, ${d.y})`)
         .call(drag(simulation))
+        .append("circle")
+            .attr("r", 6)
+            .attr("fill", "#555")
+            .attr('stroke-width', 3)
+            .attr('stroke', (d, i) => i === 0 ? 'green' : 'white')
+            
+
+    node.on('mouseover', function(d) {
+        d3.select(this)
+            .append('text')
+            .text(d => d.id)
+            .style('z-index', 1000)
+            .attr("transform", "translate(10,-10)")
+    })
+
+    node.on('mouseout', function(d) {
+        d3.select(this).select('text').remove()
+    })
 
 
     
@@ -75,8 +93,7 @@ const ForceGraph = (el, data) => {
             .attr("y2", d => d.target.y);
     
         node
-            .attr("cx", d => d.x)
-            .attr("cy", d => d.y);
+            .attr("transform", d => `translate(${d.x}, ${d.y})`) 
         });
 }
 
