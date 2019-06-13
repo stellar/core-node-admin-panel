@@ -1,12 +1,14 @@
 import { node } from "prop-types";
 
 export type NetworkGraphNode = {
+  // How far that node is from the root node (ie. how many quorum set hops)
+  // 0 means this is the node being administrated
   distance: number;
-  //
+  // The latest ledger sequence number that this node voted at
   heard: number;
   // The identity of the validator
   node: string;
-  // Quorum set.
+  // Quorum set
   qset: {
     t: number;
     v: string[] | { t: number; v: string[] }[];
