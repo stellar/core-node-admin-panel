@@ -1,5 +1,39 @@
-import { GraphData } from "../GraphTypes";
+import { GraphData, GraphLink, GraphNode } from "../Types/GraphTypes";
+import { NetworkGraphNode } from "../Types/NetworkTypes";
 import dummydata from "../dummydata";
+
+function convertResponseToGraphData(json: {
+  nodes: NetworkGraphNode[];
+}): GraphData {
+  const convertedNodes: GraphNode[] = json.nodes.map(gn =>
+    Object.assign({}, gn, { id: gn.node })
+  );
+
+  const data: GraphData = {
+    nodes: convertedNodes,
+    links: []
+  };
+  json.nodes.forEach(n => {
+    let targets: string[] = [];
+    let others = n.qset.v;
+    if (others[0] && others[0] instanceof Object) {
+      (others as { t: number; v: string[] }[]).forEach(other => {
+        other.v.forEach(other => {
+          targets.push(other);
+        });
+      });
+    } else {
+      targets = n.qset.v as string[];
+    }
+    targets.forEach(target => {
+      data.links.push({
+        source: n.node,
+        target: target
+      });
+    });
+  });
+  return data;
+}
 
 type Action =
   | { type: "FETCH_QUORUM"; payload: GraphData }
@@ -27,7 +61,7 @@ export default function reducer(
       return Object.assign(
         {},
         {
-          transitiveQuorum: dummydata
+          transitiveQuorum: convertResponseToGraphData(dummydata)
         }
       );
       break;
