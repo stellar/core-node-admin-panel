@@ -1,6 +1,8 @@
-import { GraphData, GraphLink, GraphNode } from "../Types/GraphTypes";
+import { GraphData, GraphNode } from "../Types/GraphTypes";
 import { NetworkGraphNode } from "../Types/NetworkTypes";
 import dummydata from "../dummydata";
+
+const networkData = dummydata as { nodes: NetworkGraphNode[] };
 
 function convertResponseToGraphData(json: {
   nodes: NetworkGraphNode[];
@@ -59,7 +61,7 @@ export default function reducer(
       return Object.assign(
         {},
         {
-          transitiveQuorum: convertResponseToGraphData(dummydata)
+          transitiveQuorum: convertResponseToGraphData(networkData)
         }
       );
     default:

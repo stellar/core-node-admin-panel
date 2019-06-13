@@ -12,7 +12,7 @@ export type NetworkGraphNode = {
     v: string[] | { t: number; v: string[] }[];
   };
   // one of behind|tracking|ahead (compared to the root node) or missing|unknown (when there are no recent SCP messages for that node)
-  status: string;
+  status: "behind" | "tracking" | "ahead" | "missing" | "unknown";
   // what the node is voting for
   value: string;
   // a unique ID for what the node is voting for (allows to quickly tell if nodes are voting for the same thing)
