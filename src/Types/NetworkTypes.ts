@@ -1,5 +1,3 @@
-import { node } from "prop-types";
-
 export type NetworkGraphNode = {
   // How far that node is from the root node (ie. how many quorum set hops)
   // 0 means this is the node being administrated
