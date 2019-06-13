@@ -8,16 +8,16 @@ const SimValues = {
 const NodeStyles = {
   radius: 6,
   strokeWidth: 2,
-  fill: "#555",
+  fill: (n: SimNode, i: number) => (n.active ? "#0f0" : "#555"),
   stroke: (d: SimNode, i: number) => {
     return i === 0 ? "green" : "white";
   }
 };
 
 const LinkStyles = {
-  strokeWidth: 0.2,
-  stroke: "#333",
-  opacity: 0.5
+  strokeWidth: (link: SimLink, i: number) => (link.active ? 2 : 0.2),
+  stroke: (link: SimLink, i: number) => (link.active ? "#0f0" : "#333"),
+  opacity: 1
 };
 
 interface SimNode extends d3.SimulationNodeDatum {
@@ -26,9 +26,13 @@ interface SimNode extends d3.SimulationNodeDatum {
   fx?: number;
   fy?: number;
   id: string;
+  active?: boolean;
+  data: GraphNode;
 }
 
-interface SimLink extends d3.SimulationLinkDatum<SimNode> {}
+interface SimLink extends d3.SimulationLinkDatum<SimNode> {
+  active?: boolean;
+}
 
 const ForceGraph = (el: SVGSVGElement, data: GraphData) => {
   if (!data) return;
@@ -46,9 +50,16 @@ const ForceGraph = (el: SVGSVGElement, data: GraphData) => {
     return {
       x: w / 2 + Math.random() * 50 - 25,
       y: h / 2 + Math.random() * 50 - 25,
-      id: n.id
+      id: n.id,
+      data: n
     };
   });
+
+  const findTargets = (node: SimNode) => {
+    return links.filter(link => {
+      return link.source === node;
+    });
+  };
 
   const simulation: d3.Simulation<SimNode, SimLink> = d3
     .forceSimulation(nodes)
@@ -91,22 +102,30 @@ const ForceGraph = (el: SVGSVGElement, data: GraphData) => {
     .attr("stroke-opacity", LinkStyles.opacity)
     .attr("stroke-width", LinkStyles.strokeWidth);
 
-  const node = svg
+  const labels = svg
+    .append("g")
+    .selectAll("text")
+    .data<SimNode>(nodes)
+    .join("text")
+    .text(n => n.id)
+    .attr("pointer-events", "none");
+
+  const nodeGroup = svg
     .append("g")
     .selectAll<SVGElement, SimNode>("circle")
     .data<SimNode>(nodes)
     .join("g");
-  const fixedDrag = drag(simulation);
-  node
+
+  nodeGroup
     .attr("transform", d => `translate(${d.x}, ${d.y})`)
-    .call(fixedDrag)
+    .call(drag(simulation))
     .append("circle")
     .attr("r", NodeStyles.radius)
     .attr("fill", NodeStyles.fill)
     .attr("stroke-width", NodeStyles.strokeWidth)
     .attr("stroke", NodeStyles.stroke);
 
-  node.on("mouseover", function(d) {
+  nodeGroup.on("mouseover", function(d) {
     if (this != null) {
       d3.select<SVGElement, SimNode>(this as SVGElement)
         .append("text")
@@ -115,20 +134,44 @@ const ForceGraph = (el: SVGSVGElement, data: GraphData) => {
     }
   });
 
-  node.on("mouseout", function(d) {
+  nodeGroup.on("mouseout", function(d) {
     d3.select(this)
       .select("text")
       .remove();
   });
 
+  nodeGroup.on("mouseenter", node => {
+    const links = findTargets(node);
+    links.forEach(l => {
+      l.active = true;
+      (l.target as SimNode).active = true;
+    });
+  });
+
+  nodeGroup.on("mouseleave", node => {
+    links.forEach(l => (l.active = false));
+    nodes.forEach(n => (n.active = false));
+  });
+
   simulation.on("tick", () => {
     link
-      .attr("x1", (d: SimLink) => (d.source as SimNode).x)
+      .attr("x1", d => (d.source as SimNode).x)
       .attr("y1", d => (d.source as SimNode).y)
       .attr("x2", d => (d.target as SimNode).x)
-      .attr("y2", d => (d.target as SimNode).y);
+      .attr("y2", d => (d.target as SimNode).y)
+      .attr("stroke", LinkStyles.stroke)
+      .attr("stroke-width", LinkStyles.strokeWidth);
 
-    node.attr("transform", d => `translate(${d.x}, ${d.y})`);
+    nodeGroup
+      .attr("transform", d => `translate(${d.x}, ${d.y})`)
+      .selectAll<SVGCircleElement, SimNode>("circle")
+      .attr("fill", NodeStyles.fill);
+
+    labels
+      .attr("transform", d => `translate(${d.x + 10}, ${d.y - 10})`)
+      .attr("visibility", n =>
+        n.active || n.data.distance === 0 ? "visible" : "hidden"
+      );
   });
 };
 
