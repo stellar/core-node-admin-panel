@@ -81,7 +81,7 @@ const ForceGraph = (el: SVGSVGElement, data: GraphData) => {
     };
 
     const dragEnd = (d: SimNode) => {
-      if (d3.event.active) sim.alphaTarget(0);
+      if (d3.event.active) sim.alphaTarget(0.5);
       delete d.fx;
       delete d.fy;
     };
