@@ -10,7 +10,7 @@ const NodeGraph = () => {
   // Trigger fetching of quorum data
   useEffect(() => {
     dispatch(fetchQuorum());
-  }, []);
+  }, [dispatch]);
 
   // Pull any quorum data out of our state
   const mapState = useCallback(state => {

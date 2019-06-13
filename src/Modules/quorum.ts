@@ -35,11 +35,9 @@ function convertResponseToGraphData(json: {
   return data;
 }
 
-type Action =
-  | { type: "FETCH_QUORUM"; payload: GraphData }
-  | { type: "UNKNOWN" };
+type Action = { type: "FETCH_QUORUM" } | { type: "UNKNOWN" };
 
-export function fetchQuorum() {
+export function fetchQuorum(): Action {
   return { type: "FETCH_QUORUM" };
 }
 
@@ -64,9 +62,7 @@ export default function reducer(
           transitiveQuorum: convertResponseToGraphData(dummydata)
         }
       );
-      break;
     default:
       return state;
   }
-  return state;
 }
