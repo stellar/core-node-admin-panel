@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { GraphData, GraphNode, GraphLink } from "../GraphTypes";
+import { GraphData, GraphNode, GraphLink } from "../Types/GraphTypes";
 
 const SimValues = {
   ManyBodyStrength: -700

@@ -1,5 +1,9 @@
-import { GraphData } from "../GraphTypes";
+import { GraphData } from "../Types/GraphTypes";
+import { NetworkGraphNode } from "../Types/NetworkTypes";
 import dummydata from "../dummydata";
+import { networkNodesToGraphData } from "../util/QuorumParsing";
+
+const networkData = dummydata as { nodes: NetworkGraphNode[] };
 
 type Action = { type: "FETCH_QUORUM" } | { type: "UNKNOWN" };
 
@@ -25,7 +29,7 @@ export default function reducer(
       return Object.assign(
         {},
         {
-          transitiveQuorum: dummydata
+          transitiveQuorum: networkNodesToGraphData(networkData.nodes)
         }
       );
     default:
