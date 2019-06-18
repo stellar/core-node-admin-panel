@@ -1,4 +1,6 @@
-export interface GraphNode {
+import { NetworkGraphNode } from "./NetworkTypes";
+
+export interface GraphNode extends NetworkGraphNode {
   id: string;
   distance: number;
 }

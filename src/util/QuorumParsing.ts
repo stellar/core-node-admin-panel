@@ -1,0 +1,38 @@
+import { GraphData } from "../Types/GraphTypes";
+import { NetworkGraphNode, QuorumSetGroup } from "../Types/NetworkTypes";
+
+export function networkNodesToGraphData(nodes: NetworkGraphNode[]): GraphData {
+  let data: GraphData = {
+    nodes: nodes.map(ngn => Object.assign({}, ngn, { id: ngn.node })),
+    links: []
+  };
+  nodes.forEach(node => {
+    let targetValidatorNames: string[] = [];
+
+    const applyQuorumSetToNode = (
+      node: NetworkGraphNode,
+      set: QuorumSetGroup
+    ) => {
+      let quorum = set.v;
+      if (quorum[0] && quorum[0] instanceof Object) {
+        (quorum as QuorumSetGroup[]).forEach(quorumSet => {
+          applyQuorumSetToNode(node, quorumSet);
+        });
+      } else {
+        (set.v as string[]).forEach(validator => {
+          targetValidatorNames.push(validator);
+        });
+      }
+    };
+
+    applyQuorumSetToNode(node, node.qset);
+    targetValidatorNames.forEach(target => {
+      data.links.push({
+        source: node.node,
+        target: target
+      });
+    });
+  });
+
+  return data;
+}
