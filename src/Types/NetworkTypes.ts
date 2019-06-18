@@ -1,17 +1,10 @@
+// A QuorumSetGroup can be either a grouping of validators as a single
+// quorum set, or a group of inner quorum sets
 export type QuorumSet = {
   // Threshold, the number of validators that need to agree
   t: number;
-  // List of validators
-  v: string[];
-};
-
-// A QuorumSetGroup can be either a grouping of validators as a single
-// quorum set, or a group of inner quorum sets
-export type QuorumSetGroup = {
-  // Threshold, the number of validators that need to agree
-  t: number;
   // List of validators or subquorum sets
-  v: string[] | QuorumSetGroup[];
+  v: string[] | QuorumSet[];
 };
 
 export type NetworkGraphNode = {
@@ -23,7 +16,7 @@ export type NetworkGraphNode = {
   // The identity of the validator
   node: string;
   // Quorum set
-  qset: QuorumSetGroup;
+  qset: QuorumSet;
   // one of behind|tracking|ahead (compared to the root node) or missing|unknown (when there are no recent SCP messages for that node)
   status: "behind" | "tracking" | "ahead" | "missing" | "unknown";
   // what the node is voting for
