@@ -1,7 +1,7 @@
-import { NetworkGraphNode, QuorumSetGroup } from "../Types/NetworkTypes";
+import { NetworkGraphNode, QuorumSet } from "../Types/NetworkTypes";
 import { networkNodesToGraphData } from "../util/QuorumParsing";
 
-function makeNodeFromQset(qset: QuorumSetGroup, opts?: any): NetworkGraphNode {
+function makeNodeFromQset(qset: QuorumSet, opts?: any): NetworkGraphNode {
   return Object.assign(
     {
       node: "my_test_node",
