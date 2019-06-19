@@ -23,18 +23,10 @@ function uniqueArray<T>(array: Array<T>): Array<T> {
   return array.filter(unique);
 }
 
-/*
- * Run the halting analysis on a node graph. Iterate through making each node faulty and seeing what quorums
- * it affects, and whether or not it halts your own node.
- * @param {number} numberOfNodesToTest - Maximum number of nodes to fault test at each pass
- * @return {HaltingFailure[]} List of failure cases
- */
-export function haltingAnalysis(
-  nodes: NetworkGraphNode[],
-  numberOfNodesToTest: number
-): HaltingFailure[] {
-  const failureCases: HaltingFailure[] = [];
-
+// Create the data structure needed for analysis
+function createAnalysisStructure(
+  nodes: NetworkGraphNode[]
+): AnalysisGraphNode[] {
   let analysisNodes: AnalysisGraphNode[] = nodes.map(n => {
     return {
       networkObject: n,
@@ -43,12 +35,6 @@ export function haltingAnalysis(
       live: true
     };
   });
-
-  const myNode = analysisNodes.find(n => n.networkObject.distance == 0);
-  if (!myNode) {
-    throw new Error("No node with distance 0 in halting analysis");
-  }
-
   // Find dependents and dependencies for each node so we can crawl in both directions
   analysisNodes.forEach(n => {
     (n.networkObject.qset.v as string[]).forEach(targetId => {
@@ -65,14 +51,41 @@ export function haltingAnalysis(
       }
     });
   });
+  return analysisNodes;
+}
+
+// Reset any analysis data between passes
+function reset(nodes: AnalysisGraphNode[]) {
+  nodes.forEach(n => (n.live = true));
+}
+
+/*
+ * Run the halting analysis on a node graph. Iterate through making each node faulty and seeing what quorums
+ * it affects, and whether or not it halts your own node.
+ * @param {number} numberOfNodesToTest - Maximum number of nodes to fault test at each pass
+ * @return {HaltingFailure[]} List of failure cases
+ */
+export function haltingAnalysis(
+  nodes: NetworkGraphNode[],
+  numberOfNodesToTest: number
+): HaltingFailure[] {
+  if (numberOfNodesToTest != 1) {
+    throw new Error("Halting analysis only supports order 1 at this point");
+  }
+  const failureCases: HaltingFailure[] = [];
+  const analysisNodes = createAnalysisStructure(nodes);
+
+  const myNode = analysisNodes.find(n => n.networkObject.distance == 0);
+  if (!myNode) {
+    throw new Error("No node with distance 0 in halting analysis");
+  }
 
   // Actual analysis
   // Run through each node and
   analysisNodes.forEach(nodeToHalt => {
     if (nodeToHalt === myNode) return;
 
-    // Reset on each pass
-    analysisNodes.forEach(n => (n.live = true));
+    reset(analysisNodes);
 
     let deadNodes: NetworkGraphNode[] = [];
 
