@@ -1,5 +1,6 @@
 import { NetworkGraphNode, QuorumSet } from "../Types/NetworkTypes";
 
+// Represents a failure case where a set of N nodes can take down your network
 export type HaltingFailure = {
   // The nodes which can go down and cause havoc
   vulnerableNodes: NetworkGraphNode[];
@@ -7,8 +8,9 @@ export type HaltingFailure = {
   affectedNodes: NetworkGraphNode[];
 };
 
+// Node with additional attributes for analysis
 type AnalysisGraphNode = {
-  node: NetworkGraphNode;
+  networkObject: NetworkGraphNode;
   dependents: AnalysisGraphNode[];
   dependencies: AnalysisGraphNode[];
   live: boolean;
@@ -35,32 +37,37 @@ export function haltingAnalysis(
 
   let analysisNodes: AnalysisGraphNode[] = nodes.map(n => {
     return {
-      node: n,
+      networkObject: n,
       dependents: [],
       dependencies: [],
       live: true
     };
   });
 
-  const myNode = analysisNodes.find(n => n.node.distance == 0);
+  const myNode = analysisNodes.find(n => n.networkObject.distance == 0);
   if (!myNode) {
     throw new Error("No node with distance 0 in halting analysis");
   }
 
+  // Find dependents and dependencies for each node so we can crawl in both directions
   analysisNodes.forEach(n => {
-    (n.node.qset.v as string[]).forEach(targetId => {
-      const target = analysisNodes.find(node => node.node.node == targetId);
+    (n.networkObject.qset.v as string[]).forEach(targetId => {
+      const target = analysisNodes.find(
+        node => node.networkObject.node == targetId
+      );
       if (target) {
         target.dependents.push(n);
         n.dependencies.push(target);
       } else {
         throw new Error(
-          `Bad node definition: Node ${n.node.node} is dependent on missing node ${targetId}`
+          `Bad node definition: Node ${n.networkObject.node} is dependent on missing node ${targetId}`
         );
       }
     });
   });
 
+  // Actual analysis
+  // Run through each node and
   analysisNodes.forEach(nodeToHalt => {
     if (nodeToHalt === myNode) return;
 
@@ -71,12 +78,12 @@ export function haltingAnalysis(
 
     function checkDependents(node: AnalysisGraphNode) {
       node.dependents.forEach(node => {
-        let threshold = node.node.qset.t;
+        let threshold = node.networkObject.qset.t;
         node.dependencies.forEach(dependent => {
           if (dependent.live) {
             threshold--;
           } else {
-            deadNodes.push(dependent.node);
+            deadNodes.push(dependent.networkObject);
           }
         });
 
@@ -94,7 +101,7 @@ export function haltingAnalysis(
     if (!myNode.live) {
       deadNodes = uniqueArray(deadNodes);
       failureCases.push({
-        vulnerableNodes: [nodeToHalt.node],
+        vulnerableNodes: [nodeToHalt.networkObject],
         affectedNodes: deadNodes
       });
     }

@@ -25,8 +25,7 @@ const unhealthy: NetworkGraphNode[] = [
   }),
   n({
     node: "e",
-    distance: 1,
-    qset: { t: 0, v: [] }
+    distance: 1
   })
 ];
 

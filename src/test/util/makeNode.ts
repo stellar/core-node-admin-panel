@@ -18,7 +18,7 @@ export function makeNode(options: any): NetworkGraphNode {
       heard: 1,
       node: makeid(5),
       // Quorum set
-      qset: { t: 1, v: [] },
+      qset: { t: 0, v: [] },
       status: "unknown",
       value: "val",
       value_id: 1

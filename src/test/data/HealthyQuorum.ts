@@ -10,23 +10,19 @@ const healthy: NetworkGraphNode[] = [
   }),
   n({
     node: "b",
-    distance: 1,
-    qset: { t: 0, v: [] }
+    distance: 1
   }),
   n({
     node: "c",
-    distance: 1,
-    qset: { t: 0, v: [] }
+    distance: 1
   }),
   n({
     node: "d",
-    distance: 1,
-    qset: { t: 0, v: [] }
+    distance: 1
   }),
   n({
     node: "e",
-    distance: 1,
-    qset: { t: 0, v: [] }
+    distance: 1
   })
 ];
 
