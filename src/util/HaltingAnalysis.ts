@@ -16,13 +16,6 @@ type AnalysisGraphNode = {
   live: boolean;
 };
 
-function uniqueArray<T>(array: Array<T>): Array<T> {
-  const unique = (value: T, index: number, self: Array<T>) => {
-    return self.indexOf(value) === index;
-  };
-  return array.filter(unique);
-}
-
 // Create the data structure needed for analysis
 function createAnalysisStructure(
   nodes: NetworkGraphNode[]
@@ -113,7 +106,7 @@ export function haltingAnalysis(
     checkDependents(nodeToHalt);
 
     if (!myNode.live) {
-      deadNodes = uniqueArray(deadNodes);
+      deadNodes = Array.from(new Set(deadNodes));
       failureCases.push({
         vulnerableNodes: [nodeToHalt.networkObject],
         affectedNodes: deadNodes
