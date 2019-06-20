@@ -100,11 +100,12 @@ export function haltingAnalysis(
           }
         });
 
-        // If we don't have enough live nodes
-        if (threshold > 0) {
+        // If our node is currently live, but can't make threshold it
+        // goes down, and this error can propagate out.
+        if (threshold > 0 && node.live == true) {
           node.live = false;
+          checkDependents(node);
         }
-        checkDependents(node);
       });
     }
 
