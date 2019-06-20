@@ -67,7 +67,7 @@ function reset(nodes: AnalysisGraphNode[]) {
  */
 export function haltingAnalysis(
   nodes: NetworkGraphNode[],
-  numberOfNodesToTest: number
+  numberOfNodesToTest: number = 1
 ): HaltingFailure[] {
   if (numberOfNodesToTest != 1) {
     throw new Error("Halting analysis only supports order 1 at this point");
@@ -81,7 +81,7 @@ export function haltingAnalysis(
   }
 
   // Actual analysis
-  // Run through each node and
+  // Run through each node and observe the effects of failing it
   analysisNodes.forEach(nodeToHalt => {
     if (nodeToHalt === myNode) return;
 
