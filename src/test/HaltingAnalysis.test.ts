@@ -5,6 +5,7 @@ import {
 import healthy from "./data/HealthyQuorum";
 import healthySubquorums from "./data/HealthySubquorums";
 import highlyDependent from "./data/HighlyDependent";
+import cyclical from "./data/CyclicalUnhealthy";
 import {
   simple as simpleSubquorum,
   complex as complexSubquorum
@@ -37,6 +38,11 @@ describe("halting analysis", () => {
     const failureCases = haltingAnalysis(complexSubquorum);
     expect(failureCases).toHaveLength(1);
     expect(failureCases[0].vulnerableNodes[0]).toHaveProperty("node", "g");
+  });
+
+  it("must complete with a cyclical graph", () => {
+    const failureCases = haltingAnalysis(cyclical);
+    expect(failureCases).toHaveLength(2);
   });
 
   it("must set up nodes inner quorum dependencies correctly", () => {
