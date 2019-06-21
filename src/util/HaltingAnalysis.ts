@@ -24,16 +24,22 @@ type AnalysisQuorumSet = {
   dependencies: (string | AnalysisQuorumSet)[];
 };
 
-// Type guard for determining dependency types
+// Type guards for determining dependency types
 function isQuorumSet(n: string | AnalysisQuorumSet): n is AnalysisQuorumSet {
   return (<AnalysisQuorumSet>n).threshold !== undefined;
+}
+
+function isNested(
+  set: string[] | NetworkQuorumSet[]
+): set is NetworkQuorumSet[] {
+  return typeof set[0] != "string";
 }
 
 // Create the data structure needed for analysis
 // Returns tuple of root node and an array of all nodes
 export function createAnalysisStructure(
   nodes: NetworkGraphNode[]
-): [AnalysisNode, AnalysisNode[]] {
+): { root: AnalysisNode; entries: AnalysisNode[] } {
   const myNode = nodes.find(n => n.distance == 0);
   if (!myNode) {
     throw new Error("No node with distance 0 in halting analysis");
@@ -43,9 +49,8 @@ export function createAnalysisStructure(
   const root = generateNode(myNode);
   function generateNode(node: NetworkGraphNode): AnalysisNode {
     const cached = entryCache.get(node.node);
-    if (cached) {
-      return cached;
-    }
+    if (cached) return cached;
+
     const entry: AnalysisNode = {
       networkObject: node,
       name: node.node,
@@ -56,32 +61,33 @@ export function createAnalysisStructure(
       },
       dependentsNames: []
     };
-    entryCache.set(node.node, entry);
+    entryCache.set(entry.name, entry);
 
+    generateQuorumset(node.qset, entry);
     function generateQuorumset(set: NetworkQuorumSet, entry: AnalysisNode) {
-      if (set.v.length > 0 && typeof set.v[0] == "string") {
-        (set.v as string[]).forEach(dependentName => {
+      if (isNested(set.v)) {
+        set.v.forEach(set => {
+          generateQuorumset(set, entry);
+        });
+      } else {
+        set.v.forEach(dependentName => {
           const dependentNetworkNode = nodes.find(n => n.node == dependentName);
-          if (!dependentNetworkNode)
+          if (!dependentNetworkNode) {
             throw new Error(
               "Bad network graph: no node named " + dependentName
             );
+          }
           const depNode = generateNode(dependentNetworkNode);
           entry.quorumSet.dependencies.push(depNode.name);
           depNode.dependentsNames.push(entry.name);
         });
-      } else {
-        (set.v as NetworkQuorumSet[]).forEach(set => {
-          generateQuorumset(set, entry);
-        });
       }
     }
-    generateQuorumset(node.qset, entry);
 
     return entry;
   }
 
-  return [root, Array.from(entryCache.values())];
+  return { root, entries: Array.from(entryCache.values()) };
 }
 
 // Reset any analysis data between passes
@@ -103,7 +109,7 @@ export function haltingAnalysis(
     throw new Error("Halting analysis only supports order 1 at this point");
   }
   const failureCases: HaltingFailure[] = [];
-  const [root, analysisNodes] = createAnalysisStructure(nodes);
+  const { root, entries: analysisNodes } = createAnalysisStructure(nodes);
   function getNode(name: string): AnalysisNode {
     return analysisNodes.find(n => n.name == name) as AnalysisNode;
   }
@@ -115,6 +121,31 @@ export function haltingAnalysis(
     reset(analysisNodes);
 
     let deadNodes: NetworkGraphNode[] = [];
+
+    nodeToHalt.live = false;
+    checkDependents(nodeToHalt);
+    /*
+     * Check all the nodes that are dependent on this newly dead node to see if they go
+     * down as well
+     * @param { AnalysisNode } deadNode - A node that is no longer live
+     */
+    function checkDependents(deadNode: AnalysisNode) {
+      deadNode.dependentsNames.forEach(nodeName => {
+        const dependentNode = getNode(nodeName);
+        // If this node is currently live, but can't make threshold it
+        // goes down, and this error can propagate out.
+        if (dependentNode.live && !checkSubquorum(dependentNode.quorumSet)) {
+          dependentNode.live = false;
+          checkDependents(dependentNode);
+        }
+      });
+    }
+
+    /*
+     *  Check if this quorum set has enough live nodes to validate
+     *  @param { AnalysisQuorumSet } quorum - Quorum set to test
+     *  @return { boolean } true if this quorum set meets its threshold of valid nodes
+     */
 
     function checkSubquorum(quorum: AnalysisQuorumSet): boolean {
       let threshold = quorum.threshold;
@@ -134,21 +165,6 @@ export function haltingAnalysis(
       });
       return threshold <= 0;
     }
-
-    function checkDependents(deadNode: AnalysisNode) {
-      deadNode.dependentsNames.forEach(nodeName => {
-        const node = getNode(nodeName);
-        // If this node is currently live, but can't make threshold it
-        // goes down, and this error can propagate out.
-        if (node.live && !checkSubquorum(node.quorumSet)) {
-          node.live = false;
-          checkDependents(node);
-        }
-      });
-    }
-
-    nodeToHalt.live = false;
-    checkDependents(nodeToHalt);
 
     if (!root.live) {
       deadNodes = Array.from(new Set(deadNodes));

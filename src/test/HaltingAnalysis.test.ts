@@ -46,8 +46,8 @@ describe("halting analysis", () => {
   });
 
   it("must set up nodes inner quorum dependencies correctly", () => {
-    const [root, structure] = createAnalysisStructure(simpleSubquorum);
-    const c = structure.find(n => n.name == "c");
+    const { entries } = createAnalysisStructure(simpleSubquorum);
+    const c = entries.find(n => n.name == "c");
     if (!c) {
       throw "Analysis structure error";
     }
