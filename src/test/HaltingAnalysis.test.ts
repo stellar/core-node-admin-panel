@@ -53,8 +53,8 @@ describe("halting analysis", () => {
     }
     expect(c).not.toBeNull();
     // C should have both a (direct) and b (inner) listed as dependents
-    expect(c.dependents.find(d => d.name == "b")).toBeDefined();
-    expect(c.dependents.find(d => d.name == "a")).toBeDefined();
+    expect(c.dependentsNames).toContain("b");
+    expect(c.dependentsNames).toContain("a");
   });
 });
 

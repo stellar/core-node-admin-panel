@@ -12,13 +12,13 @@ export type AnalysisNode = {
   name: string;
   live: boolean;
   quorumSet: AnalysisQuorumSet;
-  dependents: AnalysisNode[];
+  dependentsNames: string[];
   networkObject: NetworkGraphNode;
 };
 
 type AnalysisQuorumSet = {
   threshold: number;
-  dependencies: (AnalysisNode | AnalysisQuorumSet)[];
+  dependencies: (string | AnalysisQuorumSet)[];
 };
 
 const NoDependencies = {
@@ -26,10 +26,8 @@ const NoDependencies = {
   dependencies: []
 };
 
-function isAnalysisNode(
-  n: AnalysisNode | AnalysisQuorumSet
-): n is AnalysisNode {
-  return (<AnalysisNode>n).name !== undefined;
+function isQuorumSet(n: string | AnalysisQuorumSet): n is AnalysisQuorumSet {
+  return (<AnalysisQuorumSet>n).threshold !== undefined;
 }
 
 // Create the data structure needed for analysis
@@ -47,7 +45,9 @@ export function createAnalysisStructure(
 
   function generateNode(node: NetworkGraphNode): AnalysisNode {
     const cached = entryCache.get(node.node);
-    if (cached) return cached;
+    if (cached) {
+      return cached;
+    }
     const entry: AnalysisNode = {
       networkObject: node,
       name: node.node,
@@ -56,8 +56,9 @@ export function createAnalysisStructure(
         threshold: node.qset.t,
         dependencies: []
       },
-      dependents: []
+      dependentsNames: []
     };
+    entryCache.set(node.node, entry);
 
     function generateQuorumset(set: QuorumSet, entry: AnalysisNode) {
       if (set.v.length > 0 && typeof set.v[0] == "string") {
@@ -68,8 +69,8 @@ export function createAnalysisStructure(
               "Bad network graph: no node named " + dependentName
             );
           const depNode = generateNode(dependentNetworkNode);
-          entry.quorumSet.dependencies.push(depNode);
-          depNode.dependents.push(entry);
+          entry.quorumSet.dependencies.push(depNode.name);
+          depNode.dependentsNames.push(entry.name);
         });
       } else {
         (set.v as QuorumSet[]).forEach(set => {
@@ -80,7 +81,7 @@ export function createAnalysisStructure(
     generateQuorumset(node.qset, entry);
 
     entries.push(entry);
-    entryCache.set(node.node, entry);
+
     return entry;
   }
   const root = generateNode(myNode);
@@ -107,7 +108,9 @@ export function haltingAnalysis(
   }
   const failureCases: HaltingFailure[] = [];
   const [root, analysisNodes] = createAnalysisStructure(nodes);
-
+  function getNode(name: string): AnalysisNode {
+    return analysisNodes.find(n => n.name == name) as AnalysisNode;
+  }
   // Actual analysis
   // Run through each node and observe the effects of failing it
   analysisNodes.forEach(nodeToHalt => {
@@ -120,15 +123,16 @@ export function haltingAnalysis(
     function checkSubquorum(quorum: AnalysisQuorumSet): boolean {
       let threshold = quorum.threshold;
       quorum.dependencies.forEach(dependent => {
-        if (isAnalysisNode(dependent)) {
-          if (dependent.live) {
-            threshold--;
-          } else {
-            deadNodes.push(dependent.networkObject);
-          }
-        } else {
+        if (isQuorumSet(dependent)) {
           if (checkSubquorum(dependent)) {
             threshold--;
+          }
+        } else {
+          let dependentNode = getNode(dependent);
+          if (dependentNode.live) {
+            threshold--;
+          } else {
+            deadNodes.push(dependentNode.networkObject);
           }
         }
       });
@@ -136,7 +140,8 @@ export function haltingAnalysis(
     }
 
     function checkDependents(deadNode: AnalysisNode) {
-      deadNode.dependents.forEach(node => {
+      deadNode.dependentsNames.forEach(nodeName => {
+        const node = getNode(nodeName);
         // If this node is currently live, but can't make threshold it
         // goes down, and this error can propagate out.
         if (node.live && !checkSubquorum(node.quorumSet)) {
