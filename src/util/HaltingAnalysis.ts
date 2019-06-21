@@ -1,5 +1,5 @@
 import { NetworkGraphNode, QuorumSet } from "../Types/NetworkTypes";
-
+import { inspect } from "util";
 // Represents a failure case where a set of N nodes can take down your network
 export type HaltingFailure = {
   // The nodes which can go down and cause havoc
@@ -8,47 +8,87 @@ export type HaltingFailure = {
   affectedNodes: NetworkGraphNode[];
 };
 
-// Node with additional attributes for analysis
-type AnalysisGraphNode = {
-  networkObject: NetworkGraphNode;
-  dependents: AnalysisGraphNode[];
-  dependencies: AnalysisGraphNode[];
+export type AnalysisNode = {
+  name: string;
   live: boolean;
+  quorumSet: AnalysisQuorumSet;
+  dependents: AnalysisNode[];
+  networkObject: NetworkGraphNode;
 };
 
+type AnalysisQuorumSet = {
+  threshold: number;
+  dependencies: (AnalysisNode | AnalysisQuorumSet)[];
+};
+
+const NoDependencies = {
+  threshold: 0,
+  dependencies: []
+};
+
+function isAnalysisNode(
+  n: AnalysisNode | AnalysisQuorumSet
+): n is AnalysisNode {
+  return (<AnalysisNode>n).name !== undefined;
+}
+
 // Create the data structure needed for analysis
-function createAnalysisStructure(
+// Returns tuple of root node and an array of all nodes
+export function createAnalysisStructure(
   nodes: NetworkGraphNode[]
-): AnalysisGraphNode[] {
-  let analysisNodes: AnalysisGraphNode[] = nodes.map(n => {
-    return {
-      networkObject: n,
-      dependents: [],
-      dependencies: [],
-      live: true
+): [AnalysisNode, AnalysisNode[]] {
+  const myNode = nodes.find(n => n.distance == 0);
+  if (!myNode) {
+    throw new Error("No node with distance 0 in halting analysis");
+  }
+  const entries: AnalysisNode[] = [];
+
+  const entryCache: Map<String, AnalysisNode> = new Map<String, AnalysisNode>();
+
+  function generateNode(node: NetworkGraphNode): AnalysisNode {
+    const cached = entryCache.get(node.node);
+    if (cached) return cached;
+    const entry: AnalysisNode = {
+      networkObject: node,
+      name: node.node,
+      live: true,
+      quorumSet: {
+        threshold: node.qset.t,
+        dependencies: []
+      },
+      dependents: []
     };
-  });
-  // Find dependents and dependencies for each node so we can crawl in both directions
-  analysisNodes.forEach(n => {
-    (n.networkObject.qset.v as string[]).forEach(targetId => {
-      const target = analysisNodes.find(
-        node => node.networkObject.node == targetId
-      );
-      if (target) {
-        target.dependents.push(n);
-        n.dependencies.push(target);
+
+    function generateQuorumset(set: QuorumSet, entry: AnalysisNode) {
+      if (set.v.length > 0 && typeof set.v[0] == "string") {
+        (set.v as string[]).forEach(dependentName => {
+          const dependentNetworkNode = nodes.find(n => n.node == dependentName);
+          if (!dependentNetworkNode)
+            throw new Error(
+              "Bad network graph: no node named " + dependentName
+            );
+          const depNode = generateNode(dependentNetworkNode);
+          entry.quorumSet.dependencies.push(depNode);
+          depNode.dependents.push(entry);
+        });
       } else {
-        throw new Error(
-          `Bad node definition: Node ${n.networkObject.node} is dependent on missing node ${targetId}`
-        );
+        (set.v as QuorumSet[]).forEach(set => {
+          generateQuorumset(set, entry);
+        });
       }
-    });
-  });
-  return analysisNodes;
+    }
+    generateQuorumset(node.qset, entry);
+
+    entries.push(entry);
+    entryCache.set(node.node, entry);
+    return entry;
+  }
+  const root = generateNode(myNode);
+  return [root, entries];
 }
 
 // Reset any analysis data between passes
-function reset(nodes: AnalysisGraphNode[]) {
+function reset(nodes: AnalysisNode[]) {
   nodes.forEach(n => (n.live = true));
 }
 
@@ -66,36 +106,40 @@ export function haltingAnalysis(
     throw new Error("Halting analysis only supports order 1 at this point");
   }
   const failureCases: HaltingFailure[] = [];
-  const analysisNodes = createAnalysisStructure(nodes);
-
-  const myNode = analysisNodes.find(n => n.networkObject.distance == 0);
-  if (!myNode) {
-    throw new Error("No node with distance 0 in halting analysis");
-  }
+  const [root, analysisNodes] = createAnalysisStructure(nodes);
 
   // Actual analysis
   // Run through each node and observe the effects of failing it
   analysisNodes.forEach(nodeToHalt => {
-    if (nodeToHalt === myNode) return;
+    if (nodeToHalt === root) return;
 
     reset(analysisNodes);
 
     let deadNodes: NetworkGraphNode[] = [];
 
-    function checkDependents(node: AnalysisGraphNode) {
-      node.dependents.forEach(node => {
-        let threshold = node.networkObject.qset.t;
-        node.dependencies.forEach(dependent => {
+    function checkSubquorum(quorum: AnalysisQuorumSet): boolean {
+      let threshold = quorum.threshold;
+      quorum.dependencies.forEach(dependent => {
+        if (isAnalysisNode(dependent)) {
           if (dependent.live) {
             threshold--;
           } else {
             deadNodes.push(dependent.networkObject);
           }
-        });
+        } else {
+          if (checkSubquorum(dependent)) {
+            threshold--;
+          }
+        }
+      });
+      return threshold <= 0;
+    }
 
-        // If our node is currently live, but can't make threshold it
+    function checkDependents(deadNode: AnalysisNode) {
+      deadNode.dependents.forEach(node => {
+        // If this node is currently live, but can't make threshold it
         // goes down, and this error can propagate out.
-        if (threshold > 0 && node.live == true) {
+        if (node.live && !checkSubquorum(node.quorumSet)) {
           node.live = false;
           checkDependents(node);
         }
@@ -105,7 +149,7 @@ export function haltingAnalysis(
     nodeToHalt.live = false;
     checkDependents(nodeToHalt);
 
-    if (!myNode.live) {
+    if (!root.live) {
       deadNodes = Array.from(new Set(deadNodes));
       failureCases.push({
         vulnerableNodes: [nodeToHalt.networkObject],
