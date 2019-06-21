@@ -1,5 +1,5 @@
 import { NetworkGraphNode, QuorumSet } from "../Types/NetworkTypes";
-import { inspect } from "util";
+
 // Represents a failure case where a set of N nodes can take down your network
 export type HaltingFailure = {
   // The nodes which can go down and cause havoc

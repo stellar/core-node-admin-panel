@@ -1,7 +1,6 @@
 import {
   haltingAnalysis,
-  createAnalysisStructure,
-  AnalysisNode
+  createAnalysisStructure
 } from "../util/HaltingAnalysis";
 import healthy from "./data/HealthyQuorum";
 import healthySubquorums from "./data/HealthySubquorums";
@@ -10,7 +9,6 @@ import {
   simple as simpleSubquorum,
   complex as complexSubquorum
 } from "./data/HighlyDependentSubquorum";
-import { inspect } from "util";
 
 describe("halting analysis", () => {
   it("must return an empty set for a healthy quorum", () => {
