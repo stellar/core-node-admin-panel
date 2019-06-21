@@ -1,4 +1,7 @@
-import { NetworkGraphNode, QuorumSet } from "../Types/NetworkTypes";
+import {
+  NetworkGraphNode,
+  QuorumSet as NetworkQuorumSet
+} from "../Types/NetworkTypes";
 
 // Represents a failure case where a set of N nodes can take down your network
 export type HaltingFailure = {
@@ -8,7 +11,7 @@ export type HaltingFailure = {
   affectedNodes: NetworkGraphNode[];
 };
 
-export type AnalysisNode = {
+type AnalysisNode = {
   name: string;
   live: boolean;
   quorumSet: AnalysisQuorumSet;
@@ -21,11 +24,7 @@ type AnalysisQuorumSet = {
   dependencies: (string | AnalysisQuorumSet)[];
 };
 
-const NoDependencies = {
-  threshold: 0,
-  dependencies: []
-};
-
+// Type guard for determining dependency types
 function isQuorumSet(n: string | AnalysisQuorumSet): n is AnalysisQuorumSet {
   return (<AnalysisQuorumSet>n).threshold !== undefined;
 }
@@ -39,10 +38,9 @@ export function createAnalysisStructure(
   if (!myNode) {
     throw new Error("No node with distance 0 in halting analysis");
   }
-  const entries: AnalysisNode[] = [];
 
   const entryCache: Map<String, AnalysisNode> = new Map<String, AnalysisNode>();
-
+  const root = generateNode(myNode);
   function generateNode(node: NetworkGraphNode): AnalysisNode {
     const cached = entryCache.get(node.node);
     if (cached) {
@@ -60,7 +58,7 @@ export function createAnalysisStructure(
     };
     entryCache.set(node.node, entry);
 
-    function generateQuorumset(set: QuorumSet, entry: AnalysisNode) {
+    function generateQuorumset(set: NetworkQuorumSet, entry: AnalysisNode) {
       if (set.v.length > 0 && typeof set.v[0] == "string") {
         (set.v as string[]).forEach(dependentName => {
           const dependentNetworkNode = nodes.find(n => n.node == dependentName);
@@ -73,19 +71,17 @@ export function createAnalysisStructure(
           depNode.dependentsNames.push(entry.name);
         });
       } else {
-        (set.v as QuorumSet[]).forEach(set => {
+        (set.v as NetworkQuorumSet[]).forEach(set => {
           generateQuorumset(set, entry);
         });
       }
     }
     generateQuorumset(node.qset, entry);
 
-    entries.push(entry);
-
     return entry;
   }
-  const root = generateNode(myNode);
-  return [root, entries];
+
+  return [root, Array.from(entryCache.values())];
 }
 
 // Reset any analysis data between passes
