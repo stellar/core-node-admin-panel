@@ -37,6 +37,7 @@ interface SimLink extends d3.SimulationLinkDatum<SimNode> {
 const ForceGraph = (el: SVGSVGElement, data: GraphData) => {
   if (!data) return;
   const svg = d3.select(el);
+  svg.html("");
   const w = parseInt(svg.attr("width"));
   const h = parseInt(svg.attr("height"));
 
