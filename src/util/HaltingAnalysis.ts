@@ -136,6 +136,7 @@ export function haltingAnalysis(
         // goes down, and this error can propagate out.
         if (dependentNode.live && !checkSubquorum(dependentNode.quorumSet)) {
           dependentNode.live = false;
+          deadNodes.push(dependentNode.networkObject);
           checkDependents(dependentNode);
         }
       });

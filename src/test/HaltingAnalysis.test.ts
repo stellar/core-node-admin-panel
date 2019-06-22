@@ -26,6 +26,10 @@ describe("halting analysis", () => {
     const failureCases = haltingAnalysis(highlyDependent, 1);
     expect(failureCases).toHaveLength(1);
     expect(failureCases[0].vulnerableNodes[0]).toHaveProperty("node", "e");
+    const affected = failureCases[0].affectedNodes.map(n => n.node);
+    expect(affected).toContain("b");
+    expect(affected).toContain("c");
+    expect(affected).toContain("d");
   });
 
   it("must return failures for nested transitive quorum sets", () => {
@@ -55,6 +59,19 @@ describe("halting analysis", () => {
     // C should have both a (direct) and b (inner) listed as dependents
     expect(c.dependentsNames).toContain("b");
     expect(c.dependentsNames).toContain("a");
+  });
+
+  it("must set up nodes regular dependencies correctly", () => {
+    const { entries } = createAnalysisStructure(highlyDependent);
+    const e = entries.find(n => n.name == "e");
+    if (!e) {
+      throw "Analysis structure error";
+    }
+    expect(e).not.toBeNull();
+    // b, c, and d all depend on e and should be dead as well
+    expect(e.dependentsNames).toContain("b");
+    expect(e.dependentsNames).toContain("c");
+    expect(e.dependentsNames).toContain("d");
   });
 });
 
