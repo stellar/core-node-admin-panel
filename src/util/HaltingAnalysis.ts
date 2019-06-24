@@ -134,7 +134,10 @@ export function haltingAnalysis(
         const dependentNode = getNode(nodeName);
         // If this node is currently live, but can't make threshold it
         // goes down, and this error can propagate out.
-        if (dependentNode.live && !checkSubquorum(dependentNode.quorumSet)) {
+        if (
+          dependentNode.live &&
+          !quorumSetMeetsThreshold(dependentNode.quorumSet)
+        ) {
           dependentNode.live = false;
           deadNodes.push(dependentNode.networkObject);
           checkDependents(dependentNode);
@@ -148,11 +151,11 @@ export function haltingAnalysis(
      *  @return { boolean } true if this quorum set meets its threshold of valid nodes
      */
 
-    function checkSubquorum(quorum: AnalysisQuorumSet): boolean {
+    function quorumSetMeetsThreshold(quorum: AnalysisQuorumSet): boolean {
       let threshold = quorum.threshold;
       quorum.dependencies.forEach(dependent => {
         if (isQuorumSet(dependent)) {
-          if (checkSubquorum(dependent)) {
+          if (quorumSetMeetsThreshold(dependent)) {
             threshold--;
           }
         } else {
