@@ -34,13 +34,13 @@ const examples: Map<ExampleKey, NetworkGraphNode[]> = new Map([
 export function showExample(example: string): Action {
   const nodes = examples.get(example as ExampleKey);
   if (!nodes) {
-    throw "Unknown example key";
+    throw new Error("Unknown example key");
   }
   const failures = haltingAnalysis(nodes);
   return { type: "USE_EXAMPLE", data: nodes, failures: failures };
 }
 
-type QuorumStateShape = {
+export type QuorumStateShape = {
   transitiveQuorum: GraphData;
   validExamples: string[];
   failures: HaltingFailure[];

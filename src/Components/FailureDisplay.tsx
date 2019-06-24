@@ -1,23 +1,16 @@
 import React, { useCallback } from "react";
 
 import { HaltingFailure } from "../util/HaltingAnalysis";
-import { showExample } from "../Modules/quorum";
-import { useDispatch } from "redux-react-hook";
 import { useMappedState } from "redux-react-hook";
 
-const ExamplePicker = () => {
-  const dispatch = useDispatch();
+const FailureDisplay = () => {
   // Pull any quorum data out of our state
   const mapState = useCallback(state => {
     return state.quorum.failures;
   }, []);
   const list = useMappedState<HaltingFailure[]>(mapState);
 
-  const onChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    dispatch(showExample(e.target.value));
-  };
-
-  if (list.length == 0) {
+  if (list.length === 0) {
     return (
       <div>
         <h3>No Failures</h3>
@@ -30,15 +23,17 @@ const ExamplePicker = () => {
       <h1>Failures</h1>
       {list.map(failure => {
         return (
-          <div>
+          <div key={failure.affectedNodes.map(n => n.node).join(",")}>
             <h3>Vulnerable Nodes</h3>
             {failure.vulnerableNodes.map(node => {
-              return <div>{node.node}</div>;
+              return <div key={node.node}>{node.node}</div>;
             })}
             <h3>Affected Nodes</h3>
-            {failure.affectedNodes.map(node => {
-              return <div>{node.node}</div>;
-            })}
+            {failure.affectedNodes
+              .map(node => {
+                return node.node;
+              })
+              .join(",")}
           </div>
         );
       })}
@@ -46,4 +41,4 @@ const ExamplePicker = () => {
   );
 };
 
-export default ExamplePicker;
+export default FailureDisplay;

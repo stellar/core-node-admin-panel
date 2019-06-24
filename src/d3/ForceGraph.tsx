@@ -1,5 +1,6 @@
 import * as d3 from "d3";
 import { GraphData, GraphNode, GraphLink } from "../Types/GraphTypes";
+import { HaltingFailure } from "../util/HaltingAnalysis";
 
 const SimValues = {
   ManyBodyStrength: -700
@@ -7,16 +8,30 @@ const SimValues = {
 
 const NodeStyles = {
   radius: 6,
-  strokeWidth: 2,
-  fill: (n: SimNode, i: number) => (n.active ? "#0f0" : "#555"),
-  stroke: (d: SimNode, i: number) => {
-    return i === 0 ? "green" : "white";
+  className: (n: SimNode) => {
+    const classes = ["node"];
+    if (n.data.distance === 0) classes.push("self");
+    if (n.vulnerable) classes.push("vulnerable");
+    classes.push(n.live ? "live" : "dead");
+    return classes.join(" ");
   }
 };
 
 const LinkStyles = {
-  strokeWidth: (link: SimLink, i: number) => (link.active ? 2 : 0.2),
-  stroke: (link: SimLink, i: number) => (link.active ? "#0f0" : "#333"),
+  strokeWidth: (link: SimLink, i: number) => {
+    return link.active ? 2 : 0.2;
+  },
+  stroke: (link: SimLink, i: number) => {
+    if (!link.live) {
+      return "red";
+    }
+    return link.active ? "#0f0" : "#333";
+  },
+  className: (l: SimLink) => {
+    const classes = ["link"];
+    classes.push(l.live ? "live" : "dead");
+    return classes.join(" ");
+  },
   opacity: 1
 };
 
@@ -28,32 +43,60 @@ interface SimNode extends d3.SimulationNodeDatum {
   id: string;
   active?: boolean;
   data: GraphNode;
+  live: boolean;
+  vulnerable: boolean;
 }
 
 interface SimLink extends d3.SimulationLinkDatum<SimNode> {
   active?: boolean;
+  live: boolean;
 }
 
-const ForceGraph = (el: SVGSVGElement, data: GraphData) => {
+const ForceGraph = (
+  el: SVGSVGElement,
+  data: GraphData,
+  failure?: HaltingFailure
+) => {
   if (!data) return;
   const svg = d3.select(el);
+  console.log("Failure? ", failure);
   svg.html("");
   const w = parseInt(svg.attr("width"));
   const h = parseInt(svg.attr("height"));
 
   const links: SimLink[] = data.links.map((l: GraphLink) => {
-    return {
+    const link = {
       source: l.source,
-      target: l.target
+      target: l.target,
+      live: true
     };
+    if (failure) {
+      if (failure.affectedNodes.find(n => n.node === link.target)) {
+        link.live = false;
+      }
+    }
+    return link;
   });
   const nodes: SimNode[] = data.nodes.map((n: GraphNode) => {
-    return {
+    const simNode = {
       x: w / 2 + Math.random() * 50 - 25,
       y: h / 2 + Math.random() * 50 - 25,
       id: n.id,
-      data: n
+      data: n,
+      live: true,
+      vulnerable: false
     };
+
+    if (failure) {
+      if (failure.affectedNodes.find(n => n.node === simNode.id)) {
+        simNode.live = false;
+      }
+      if (failure.vulnerableNodes.find(n => n.node === simNode.id)) {
+        simNode.vulnerable = true;
+      }
+    }
+
+    return simNode;
   });
 
   const findTargets = (node: SimNode) => {
@@ -99,9 +142,7 @@ const ForceGraph = (el: SVGSVGElement, data: GraphData) => {
     .selectAll("line")
     .data(links)
     .join("line")
-    .attr("stroke", LinkStyles.stroke)
-    .attr("stroke-opacity", LinkStyles.opacity)
-    .attr("stroke-width", LinkStyles.strokeWidth);
+    .attr("class", LinkStyles.className);
 
   const labels = svg
     .append("g")
@@ -122,9 +163,8 @@ const ForceGraph = (el: SVGSVGElement, data: GraphData) => {
     .call(drag(simulation))
     .append("circle")
     .attr("r", NodeStyles.radius)
-    .attr("fill", NodeStyles.fill)
-    .attr("stroke-width", NodeStyles.strokeWidth)
-    .attr("stroke", NodeStyles.stroke);
+    .attr("class", NodeStyles.className)
+    .attr("data-vulnerable", (n: SimNode) => n.vulnerable);
 
   nodeGroup.on("mouseover", function(d) {
     if (this != null) {
@@ -166,7 +206,7 @@ const ForceGraph = (el: SVGSVGElement, data: GraphData) => {
     nodeGroup
       .attr("transform", d => `translate(${d.x}, ${d.y})`)
       .selectAll<SVGCircleElement, SimNode>("circle")
-      .attr("fill", NodeStyles.fill);
+      .attr("class", NodeStyles.className);
 
     labels
       .attr("transform", d => `translate(${d.x + 10}, ${d.y - 10})`)
