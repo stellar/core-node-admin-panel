@@ -1,0 +1,42 @@
+line.dead {
+  stroke: "red";
+}
+
+.node {
+  fill: white;
+  stroke: gray;
+  stroke-width: 1;
+}
+
+.node.dead {
+  stroke: red;
+}
+
+.node[data-vulnerable="true"] {
+  animation: nodepulse 1s ease-out infinite;
+}
+
+@keyframes nodepulse {
+  0% {
+    stroke-width: 2;
+  }
+  100% {
+    stroke-width: 10;
+  }
+}
+
+.node.self {
+  stroke: blue;
+  stroke-width: 3;
+}
+
+.link.dead {
+  stroke-dasharray: 10 3;
+  animation: dash 1s linear infinite;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: 13;
+  }
+}
