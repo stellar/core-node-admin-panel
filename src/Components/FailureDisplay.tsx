@@ -20,20 +20,25 @@ const FailureDisplay = () => {
 
   return (
     <div>
-      <h1>Failures</h1>
+      <h3>Failures</h3>
       {list.map(failure => {
+        const key = failure.affectedNodes.map(n => n.node).join(",");
         return (
-          <div key={failure.affectedNodes.map(n => n.node).join(",")}>
-            <h3>Vulnerable Nodes</h3>
-            {failure.vulnerableNodes.map(node => {
-              return <div key={node.node}>{node.node}</div>;
-            })}
-            <h3>Affected Nodes</h3>
+          <div key={key}>
+            <b>
+              Losing{" "}
+              {failure.vulnerableNodes
+                .map(node => {
+                  return node.node;
+                })
+                .join(", ")}
+            </b>
+            <span> takes down </span>
             {failure.affectedNodes
               .map(node => {
                 return node.node;
               })
-              .join(",")}
+              .join(", ")}
           </div>
         );
       })}
