@@ -59,7 +59,6 @@ const ForceGraph = (
 ) => {
   if (!data) return;
   const svg = d3.select(el);
-  console.log("Failure? ", failure);
   svg.html("");
   const w = parseInt(svg.attr("width"));
   const h = parseInt(svg.attr("height"));
@@ -211,7 +210,7 @@ const ForceGraph = (
     labels
       .attr("transform", d => `translate(${d.x + 10}, ${d.y - 10})`)
       .attr("visibility", n =>
-        n.active || n.data.distance === 0 ? "visible" : "hidden"
+        n.active || n.data.distance === 0 ? "visible" : "visible"
       );
   });
 };

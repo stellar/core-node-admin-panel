@@ -7,10 +7,15 @@ import { haltingAnalysis, HaltingFailure } from "../util/HaltingAnalysis";
 import healthy from "../test/data/HealthyQuorum";
 import highlyDependent from "../test/data/HighlyDependent";
 import { simple as highlyDependentSubquorum } from "../test/data/HighlyDependentSubquorum";
+import halfDead from "../test/data/HalfDead";
 
 const networkData = dummydata as { nodes: NetworkGraphNode[] };
 
-type ExampleKey = "healthy" | "highlyDependent" | "highlyDependentSubquorum";
+type ExampleKey =
+  | "healthy"
+  | "halfDead"
+  | "highlyDependent"
+  | "highlyDependentSubquorum";
 
 type Action =
   | { type: "FETCH_QUORUM" }
@@ -27,6 +32,7 @@ export function fetchQuorum(): Action {
 
 const examples: Map<ExampleKey, NetworkGraphNode[]> = new Map([
   ["healthy", healthy],
+  ["halfDead", halfDead],
   ["highlyDependent", highlyDependent],
   ["highlyDependentSubquorum", highlyDependentSubquorum]
 ]);
