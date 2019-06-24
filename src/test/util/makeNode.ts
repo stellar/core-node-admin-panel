@@ -26,3 +26,12 @@ export function makeNode(options: any): NetworkGraphNode {
     options
   );
 }
+
+export function makeGraph(json: any): NetworkGraphNode[] {
+  const nodeNames = Object.keys(json);
+  return nodeNames.map(name => {
+    const options = json[name];
+    options.node = name;
+    return makeNode(options);
+  });
+}
