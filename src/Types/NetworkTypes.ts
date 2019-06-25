@@ -4,7 +4,7 @@ export type QuorumSet = {
   // Threshold, the number of validators that need to agree
   readonly t: number;
   // List of validators or subquorum sets
-  readonly v: string[] | QuorumSet[];
+  readonly v: (string | QuorumSet)[];
 };
 
 export type NetworkGraphNode = {
@@ -15,8 +15,8 @@ export type NetworkGraphNode = {
   readonly heard: number;
   // The identity of the validator
   readonly node: string;
-  // Quorum set
-  readonly qset: QuorumSet;
+  // Quorum set.  Missing or unknown nodes will be undefined.
+  readonly qset?: QuorumSet;
   // one of behind|tracking|ahead (compared to the root node) or missing|unknown (when there are no recent SCP messages for that node)
   readonly status: "behind" | "tracking" | "ahead" | "missing" | "unknown";
   // what the node is voting for

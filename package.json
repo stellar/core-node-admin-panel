@@ -23,7 +23,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "test:debugger": "node --inspect-brk node_modules/.bin/jest --runInBand --watch"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -43,6 +44,7 @@
   "devDependencies": {
     "husky": "^2.4.1",
     "prettier": "1.18.2",
-    "pretty-quick": "^1.11.0"
+    "pretty-quick": "^1.11.0",
+    "ts-jest": "^24.0.2"
   }
 }
