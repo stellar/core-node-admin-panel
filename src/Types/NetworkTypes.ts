@@ -15,7 +15,7 @@ export type NetworkGraphNode = {
   readonly heard: number;
   // The identity of the validator
   readonly node: string;
-  // Quorum set
+  // Quorum set.  Missing or unknown nodes will be undefined.
   readonly qset?: QuorumSet;
   // one of behind|tracking|ahead (compared to the root node) or missing|unknown (when there are no recent SCP messages for that node)
   readonly status: "behind" | "tracking" | "ahead" | "missing" | "unknown";
