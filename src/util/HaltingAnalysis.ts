@@ -26,7 +26,7 @@ type AnalysisQuorumSet = {
 
 // Type guards for determining dependency types
 function isQuorumSet(n: string | AnalysisQuorumSet): n is AnalysisQuorumSet {
-  return (<AnalysisQuorumSet>n).threshold !== undefined;
+  return (n as AnalysisQuorumSet).threshold !== undefined;
 }
 
 function isNested(
@@ -40,7 +40,7 @@ function isNested(
 export function createAnalysisStructure(
   nodes: NetworkGraphNode[]
 ): { root: AnalysisNode; entries: AnalysisNode[] } {
-  const myNode = nodes.find(n => n.distance == 0);
+  const myNode = nodes.find(n => n.distance === 0);
   if (!myNode) {
     throw new Error("No node with distance 0 in halting analysis");
   }
@@ -71,7 +71,9 @@ export function createAnalysisStructure(
         });
       } else {
         set.v.forEach(dependentName => {
-          const dependentNetworkNode = nodes.find(n => n.node == dependentName);
+          const dependentNetworkNode = nodes.find(
+            n => n.node === dependentName
+          );
           if (!dependentNetworkNode) {
             throw new Error(
               "Bad network graph: no node named " + dependentName
@@ -105,13 +107,13 @@ export function haltingAnalysis(
   nodes: NetworkGraphNode[],
   numberOfNodesToTest: number = 1
 ): HaltingFailure[] {
-  if (numberOfNodesToTest != 1) {
+  if (numberOfNodesToTest !== 1) {
     throw new Error("Halting analysis only supports order 1 at this point");
   }
   const failureCases: HaltingFailure[] = [];
   const { root, entries: analysisNodes } = createAnalysisStructure(nodes);
   function getNode(name: string): AnalysisNode {
-    return analysisNodes.find(n => n.name == name) as AnalysisNode;
+    return analysisNodes.find(n => n.name === name) as AnalysisNode;
   }
   // Actual analysis
   // Run through each node and observe the effects of failing it

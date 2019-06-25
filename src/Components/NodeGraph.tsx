@@ -1,9 +1,11 @@
 import React, { useRef, useEffect, useCallback } from "react";
 import ForceGraph from "../d3/ForceGraph";
-
-import { fetchQuorum } from "../Modules/quorum";
+import "../d3/ForceGraph.css";
+import { QuorumStateShape, fetchQuorum } from "../Modules/quorum";
 import { useDispatch } from "redux-react-hook";
 import { useMappedState } from "redux-react-hook";
+import { GraphData } from "../Types/GraphTypes";
+import { HaltingFailure } from "../util/HaltingAnalysis";
 
 const NodeGraph = () => {
   const dispatch = useDispatch();
@@ -13,16 +15,22 @@ const NodeGraph = () => {
   }, [dispatch]);
 
   // Pull any quorum data out of our state
-  const mapState = useCallback(state => {
-    return state.quorum.transitiveQuorum;
+  const mapState = useCallback((state: { quorum: QuorumStateShape }) => {
+    return {
+      quorum: state.quorum.transitiveQuorum,
+      failures: state.quorum.failures
+    };
   }, []);
-  const data = useMappedState(mapState);
+  const data = useMappedState<{
+    quorum: GraphData;
+    failures: HaltingFailure[];
+  }>(mapState);
 
   // Update the svg with the new quorum state data
   const ref = useRef<SVGSVGElement>(null);
   useEffect(() => {
     if (ref && ref.current) {
-      ForceGraph(ref.current, data);
+      ForceGraph(ref.current, data.quorum, data.failures[0]);
     }
   }, [ref, data]);
 
