@@ -18,21 +18,11 @@ const NodeStyles = {
 };
 
 const LinkStyles = {
-  strokeWidth: (link: SimLink, i: number) => {
-    return link.active ? 2 : 0.2;
-  },
-  stroke: (link: SimLink, i: number) => {
-    if (!link.live) {
-      return "red";
-    }
-    return link.active ? "#0f0" : "#333";
-  },
   className: (l: SimLink) => {
     const classes = ["link"];
     classes.push(l.live ? "live" : "dead");
     return classes.join(" ");
-  },
-  opacity: 1
+  }
 };
 
 interface SimNode extends d3.SimulationNodeDatum {
@@ -165,6 +155,15 @@ const ForceGraph = (
     .attr("class", NodeStyles.className)
     .attr("data-vulnerable", (n: SimNode) => n.vulnerable);
 
+  nodeGroup
+    .select(".node.self")
+    // @ts-ignore this possibly being null.  We will always have a self node.
+    .select(function() {
+      return this.parentNode;
+    })
+    .append("text")
+    .text(n => (n.live ? "😀" : "😭"));
+
   nodeGroup.on("mouseover", function(d) {
     if (this != null) {
       d3.select<SVGElement, SimNode>(this as SVGElement)
@@ -198,9 +197,7 @@ const ForceGraph = (
       .attr("x1", d => (d.source as SimNode).x)
       .attr("y1", d => (d.source as SimNode).y)
       .attr("x2", d => (d.target as SimNode).x)
-      .attr("y2", d => (d.target as SimNode).y)
-      .attr("stroke", LinkStyles.stroke)
-      .attr("stroke-width", LinkStyles.strokeWidth);
+      .attr("y2", d => (d.target as SimNode).y);
 
     nodeGroup
       .attr("transform", d => `translate(${d.x}, ${d.y})`)
