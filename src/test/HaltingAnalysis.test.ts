@@ -6,6 +6,9 @@ import healthy from "./data/HealthyQuorum";
 import healthySubquorums from "./data/HealthySubquorums";
 import highlyDependent from "./data/HighlyDependent";
 import cyclical from "./data/CyclicalUnhealthy";
+import preHalt from "./data/PreHalt";
+import mixed from "./data/MixedQuorumType";
+import missing from "./data/MissingNodes";
 import {
   simple as simpleSubquorum,
   complex as complexSubquorum
@@ -72,6 +75,16 @@ describe("halting analysis", () => {
     expect(e.dependentsNames).toContain("b");
     expect(e.dependentsNames).toContain("c");
     expect(e.dependentsNames).toContain("d");
+  });
+
+  it("must handle topology with missing nodes", () => {
+    const failureCases = haltingAnalysis(missing);
+    expect(failureCases).toHaveLength(1);
+  });
+
+  it("must handle mixed type quorum sets", () => {
+    const failureCases = haltingAnalysis(mixed);
+    expect(failureCases).not.toHaveLength(0);
   });
 });
 

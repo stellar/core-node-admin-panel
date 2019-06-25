@@ -14,6 +14,7 @@ export type HaltingFailure = {
 type AnalysisNode = {
   name: string;
   live: boolean;
+  status: string;
   quorumSet: AnalysisQuorumSet;
   dependentsNames: string[];
   networkObject: NetworkGraphNode;
@@ -29,10 +30,8 @@ function isQuorumSet(n: string | AnalysisQuorumSet): n is AnalysisQuorumSet {
   return (n as AnalysisQuorumSet).threshold !== undefined;
 }
 
-function isNested(
-  set: string[] | NetworkQuorumSet[]
-): set is NetworkQuorumSet[] {
-  return typeof set[0] != "string";
+function isNested(set: string | NetworkQuorumSet): set is NetworkQuorumSet {
+  return typeof set != "string";
 }
 
 // Create the data structure needed for analysis
@@ -55,22 +54,28 @@ export function createAnalysisStructure(
       networkObject: node,
       name: node.node,
       live: true,
+      status: node.status,
       quorumSet: {
-        threshold: node.qset.t,
+        threshold: 0,
         dependencies: []
       },
       dependentsNames: []
     };
     entryCache.set(entry.name, entry);
-
-    generateQuorumset(node.qset, entry);
+    if (node.qset) {
+      entry.quorumSet.threshold = node.qset.t;
+      generateQuorumset(node.qset, entry);
+    } else if (node.status === "missing") {
+      entry.live = false;
+    } else {
+      throw new Error("Bad state, No Qset on non-missing node " + node.node);
+    }
     function generateQuorumset(set: NetworkQuorumSet, entry: AnalysisNode) {
-      if (isNested(set.v)) {
-        set.v.forEach(set => {
-          generateQuorumset(set, entry);
-        });
-      } else {
-        set.v.forEach(dependentName => {
+      set.v.forEach(dependent => {
+        if (isNested(dependent)) {
+          generateQuorumset(dependent, entry);
+        } else {
+          let dependentName = dependent;
           const dependentNetworkNode = nodes.find(
             n => n.node === dependentName
           );
@@ -82,8 +87,8 @@ export function createAnalysisStructure(
           const depNode = generateNode(dependentNetworkNode);
           entry.quorumSet.dependencies.push(depNode.name);
           depNode.dependentsNames.push(entry.name);
-        });
-      }
+        }
+      });
     }
 
     return entry;
