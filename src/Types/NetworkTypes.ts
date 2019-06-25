@@ -12,7 +12,7 @@ export type NetworkGraphNode = {
   // 0 means this is the node being administrated
   readonly distance: number;
   // The latest ledger sequence number that this node voted at
-  readonly heard: number;
+  readonly heard?: number;
   // The identity of the validator
   readonly node: string;
   // Quorum set.  Missing or unknown nodes will be undefined.
@@ -20,7 +20,7 @@ export type NetworkGraphNode = {
   // one of behind|tracking|ahead (compared to the root node) or missing|unknown (when there are no recent SCP messages for that node)
   readonly status: "behind" | "tracking" | "ahead" | "missing" | "unknown";
   // what the node is voting for
-  readonly value: string;
+  readonly value?: string;
   // a unique ID for what the node is voting for (allows to quickly tell if nodes are voting for the same thing)
-  readonly value_id: number;
+  readonly value_id?: number;
 };
