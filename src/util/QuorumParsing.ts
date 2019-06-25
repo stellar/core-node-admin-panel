@@ -22,7 +22,10 @@ export function networkNodesToGraphData(nodes: NetworkGraphNode[]): GraphData {
       }
     };
 
-    applyQuorumSetToNode(node, node.qset);
+    if (node.qset) {
+      applyQuorumSetToNode(node, node.qset);
+    }
+
     targetValidatorNames.forEach(target => {
       data.links.push({
         source: node.node,
