@@ -6,7 +6,6 @@ import healthy from "./data/HealthyQuorum";
 import healthySubquorums from "./data/HealthySubquorums";
 import highlyDependent from "./data/HighlyDependent";
 import cyclical from "./data/CyclicalUnhealthy";
-import preHalt from "./data/PreHalt";
 import mixed from "./data/MixedQuorumType";
 import missing from "./data/MissingNodes";
 import {
