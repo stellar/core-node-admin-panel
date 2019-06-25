@@ -157,8 +157,8 @@ const ForceGraph = (
 
   nodeGroup
     .select(".node.self")
-    // @ts-ignore this possibly being null.  We will always have a self node.
     .select(function() {
+      // @ts-ignore this possibly being null.  We will always have a self node.
       return this.parentNode;
     })
     .append("text")

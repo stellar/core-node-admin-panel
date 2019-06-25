@@ -1,6 +1,7 @@
 import {
   haltingAnalysis,
-  createAnalysisStructure
+  createAnalysisStructure,
+  generateCombinations
 } from "../util/HaltingAnalysis";
 import healthy from "./data/HealthyQuorum";
 import healthySubquorums from "./data/HealthySubquorums";
@@ -8,6 +9,7 @@ import highlyDependent from "./data/HighlyDependent";
 import cyclical from "./data/CyclicalUnhealthy";
 import mixed from "./data/MixedQuorumType";
 import missing from "./data/MissingNodes";
+import twonode from "./data/TwoNodeFailure";
 import {
   simple as simpleSubquorum,
   complex as complexSubquorum
@@ -84,6 +86,17 @@ describe("halting analysis", () => {
   it("must handle mixed type quorum sets", () => {
     const failureCases = haltingAnalysis(mixed);
     expect(failureCases).not.toHaveLength(0);
+  });
+
+  it("must find failure cases for 2 node vulnerabilities", () => {
+    const fc = haltingAnalysis(twonode, 2);
+    expect(fc).toHaveLength(1);
+  });
+
+  it("must generate correct subsets for n>1 groups", () => {
+    const nodes = ["a", "b", "c", "d", "e"];
+    const sets = generateCombinations(nodes, 3);
+    expect(sets).toHaveLength(25); // 5choose3 + 5choose2 + 5choose1 = 10 + 10 + 5
   });
 });
 
