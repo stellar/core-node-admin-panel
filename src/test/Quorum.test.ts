@@ -1,5 +1,6 @@
 import { NetworkGraphNode, QuorumSet } from "../Types/NetworkTypes";
 import { networkNodesToGraphData } from "../util/QuorumParsing";
+import PreHalt from "./data/PreHalt";
 
 function makeNodeFromQset(qset: QuorumSet, opts?: any): NetworkGraphNode {
   return Object.assign(
@@ -80,6 +81,14 @@ describe("quorum parsing", () => {
       arrayContainingObject("target", "othervalidator1")
     );
     expect(data.links).toEqual(arrayContainingObject("target", "sdf_watcher1"));
+  });
+
+  it("should generate valid data from PreHalt snapshot", () => {
+    const data = networkNodesToGraphData(PreHalt);
+    data.links.forEach(l => {
+      expect(typeof l.source).toBe("string");
+      expect(typeof l.target).toBe("string");
+    });
   });
 });
 

@@ -8,6 +8,7 @@ import healthy from "../test/data/HealthyQuorum";
 import highlyDependent from "../test/data/HighlyDependent";
 import { simple as highlyDependentSubquorum } from "../test/data/HighlyDependentSubquorum";
 import halfDead from "../test/data/HalfDead";
+import preHalt from "../test/data/PreHalt";
 
 const networkData = dummydata as { nodes: NetworkGraphNode[] };
 
@@ -15,7 +16,8 @@ type ExampleKey =
   | "healthy"
   | "halfDead"
   | "highlyDependent"
-  | "highlyDependentSubquorum";
+  | "highlyDependentSubquorum"
+  | "preHalt";
 
 type Action =
   | { type: "FETCH_QUORUM" }
@@ -34,7 +36,8 @@ const examples: Map<ExampleKey, NetworkGraphNode[]> = new Map([
   ["healthy", healthy],
   ["halfDead", halfDead],
   ["highlyDependent", highlyDependent],
-  ["highlyDependentSubquorum", highlyDependentSubquorum]
+  ["highlyDependentSubquorum", highlyDependentSubquorum],
+  ["preHalt", preHalt]
 ]);
 
 export function showExample(example: string): Action {
@@ -42,7 +45,7 @@ export function showExample(example: string): Action {
   if (!nodes) {
     throw new Error("Unknown example key");
   }
-  const failures = haltingAnalysis(nodes);
+  const failures = haltingAnalysis(nodes, 2);
   return { type: "USE_EXAMPLE", data: nodes, failures: failures };
 }
 
