@@ -28,14 +28,24 @@ const NodeGraph = () => {
 
   // Update the svg with the new quorum state data
   const ref = useRef<SVGSVGElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (ref && ref.current) {
+    if (ref && ref.current && containerRef.current) {
+      ref.current.setAttribute(
+        "width",
+        containerRef.current.offsetWidth + "px"
+      );
+      ref.current.setAttribute(
+        "height",
+        containerRef.current.offsetHeight + "px"
+      );
+
       ForceGraph(ref.current, data.quorum, data.failures[0]);
     }
   }, [ref, data]);
 
   return (
-    <div>
+    <div ref={containerRef}>
       <h1>Stellar Node Graph</h1>
       <svg width={640} height={480} ref={ref} />
     </div>
