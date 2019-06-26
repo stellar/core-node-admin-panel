@@ -121,7 +121,7 @@ const ForceGraph = (
     };
 
     const dragEnd = (d: SimNode) => {
-      if (d3.event.active) sim.alphaTarget(0.5);
+      if (!d3.event.active) sim.alphaTarget(0);
       delete d.fx;
       delete d.fy;
     };
@@ -170,34 +170,6 @@ const ForceGraph = (
     })
     .append("text")
     .text(n => (n.live ? "😀" : "😭"));
-
-  nodeGroup.on("mouseover", function(d) {
-    if (this != null) {
-      d3.select<SVGElement, SimNode>(this as SVGElement)
-        .append("text")
-        .text((d: SimNode) => d.id)
-        .attr("transform", "translate(10,-10)");
-    }
-  });
-
-  nodeGroup.on("mouseout", function(d) {
-    d3.select(this)
-      .select("text")
-      .remove();
-  });
-
-  nodeGroup.on("mouseenter", node => {
-    const links = findTargets(node);
-    links.forEach(l => {
-      l.active = true;
-      (l.target as SimNode).active = true;
-    });
-  });
-
-  nodeGroup.on("mouseleave", node => {
-    links.forEach(l => (l.active = false));
-    nodes.forEach(n => (n.active = false));
-  });
 
   simulation.on("tick", () => {
     link
