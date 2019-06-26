@@ -103,6 +103,21 @@ function reset(nodes: AnalysisNode[]) {
 }
 
 /*
+ * Create all sets of maxSize or fewer combinations of nodes
+ */
+export function generateCombinations<T>(items: T[], maxSize: number): (T[])[] {
+  const results: T[][] = [];
+  if (maxSize <= 0) return results;
+  items.forEach(item => {
+    results.push([item]);
+    const others = items.slice(items.indexOf(item) + 1);
+    const otherCombos = generateCombinations(others, maxSize - 1);
+    otherCombos.forEach(otherCombo => results.push([item, ...otherCombo]));
+  });
+  return results;
+}
+
+/*
  * Run the halting analysis on a node graph. Iterate through making each node faulty and seeing what quorums
  * it affects, and whether or not it halts your own node.
  * @param {number} numberOfNodesToTest - Maximum number of nodes to fault test at each pass
@@ -112,9 +127,6 @@ export function haltingAnalysis(
   nodes: NetworkGraphNode[],
   numberOfNodesToTest: number = 1
 ): HaltingFailure[] {
-  if (numberOfNodesToTest !== 1) {
-    throw new Error("Halting analysis only supports order 1 at this point");
-  }
   const failureCases: HaltingFailure[] = [];
   const { root, entries: analysisNodes } = createAnalysisStructure(nodes);
   function getNode(name: string): AnalysisNode {
@@ -122,15 +134,15 @@ export function haltingAnalysis(
   }
   // Actual analysis
   // Run through each node and observe the effects of failing it
-  analysisNodes.forEach(nodeToHalt => {
-    if (nodeToHalt === root) return;
+  const failureSets = generateCombinations(analysisNodes, numberOfNodesToTest);
+  failureSets.forEach(nodesToHalt => {
+    if (nodesToHalt.indexOf(root) !== -1) return;
 
     reset(analysisNodes);
 
     let deadNodes: NetworkGraphNode[] = [];
-
-    nodeToHalt.live = false;
-    checkDependents(nodeToHalt);
+    nodesToHalt.forEach(n => (n.live = false));
+    nodesToHalt.forEach(n => checkDependents(n));
     /*
      * Check all the nodes that are dependent on this newly dead node to see if they go
      * down as well
@@ -180,7 +192,7 @@ export function haltingAnalysis(
     if (!root.live) {
       deadNodes = Array.from(new Set(deadNodes));
       failureCases.push({
-        vulnerableNodes: [nodeToHalt.networkObject],
+        vulnerableNodes: nodesToHalt.map(n => n.networkObject),
         affectedNodes: deadNodes
       });
     }
