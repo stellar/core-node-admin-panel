@@ -53,7 +53,6 @@ const ForceGraph = (
   const w = parseInt(svg.attr("width"));
   const h = parseInt(svg.attr("height"));
   const container = svg.append("g");
-  const transform = d3.zoomIdentity;
   const zoom: d3.ZoomBehavior<SVGSVGElement, unknown> = d3.zoom();
   zoom.scaleExtent([1 / 2, 8]).on("zoom", function() {
     container.attr("transform", d3.event.transform);

@@ -197,5 +197,8 @@ export function haltingAnalysis(
       });
     }
   });
-  return failureCases;
+
+  return failureCases.sort(
+    (a, b) => a.vulnerableNodes.length - b.vulnerableNodes.length
+  );
 }
