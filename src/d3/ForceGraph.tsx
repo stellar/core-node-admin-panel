@@ -94,12 +94,6 @@ const ForceGraph = (
     return simNode;
   });
 
-  const findTargets = (node: SimNode) => {
-    return links.filter(link => {
-      return link.source === node;
-    });
-  };
-
   const simulation: d3.Simulation<SimNode, SimLink> = d3
     .forceSimulation(nodes)
     .force("link", d3.forceLink<SimNode, SimLink>(links).id(n => n.id))
