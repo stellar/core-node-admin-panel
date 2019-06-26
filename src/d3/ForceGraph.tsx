@@ -52,6 +52,13 @@ const ForceGraph = (
   svg.html("");
   const w = parseInt(svg.attr("width"));
   const h = parseInt(svg.attr("height"));
+  const container = svg.append("g");
+  const transform = d3.zoomIdentity;
+  const zoom: d3.ZoomBehavior<SVGSVGElement, unknown> = d3.zoom();
+  zoom.scaleExtent([1 / 2, 8]).on("zoom", function() {
+    container.attr("transform", d3.event.transform);
+  });
+  svg.call(zoom);
 
   const links: SimLink[] = data.links.map((l: GraphLink) => {
     const link = {
@@ -126,14 +133,14 @@ const ForceGraph = (
       .on("end", dragEnd);
   };
 
-  const link = svg
+  const link = container
     .append("g")
     .selectAll("line")
     .data(links)
     .join("line")
     .attr("class", LinkStyles.className);
 
-  const labels = svg
+  const labels = container
     .append("g")
     .selectAll("text")
     .data<SimNode>(nodes)
@@ -141,7 +148,7 @@ const ForceGraph = (
     .text(n => n.id)
     .attr("pointer-events", "none");
 
-  const nodeGroup = svg
+  const nodeGroup = container
     .append("g")
     .selectAll<SVGElement, SimNode>("circle")
     .data<SimNode>(nodes)
