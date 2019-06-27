@@ -18,7 +18,6 @@ const ExamplePicker = () => {
 
   return (
     <div>
-      <h1>Examples</h1>
       <select onChange={onChange}>
         <option key="Nothing">Select an example graph</option>
         {list.map(example => (

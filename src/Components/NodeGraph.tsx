@@ -45,8 +45,7 @@ const NodeGraph = () => {
   }, [ref, data]);
 
   return (
-    <div ref={containerRef}>
-      <h1>Stellar Node Graph</h1>
+    <div style={{ height: "100%" }} ref={containerRef}>
       <svg width={640} height={480} ref={ref} />
     </div>
   );

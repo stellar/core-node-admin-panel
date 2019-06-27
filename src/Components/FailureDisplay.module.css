@@ -1,0 +1,38 @@
+.FailureDialog {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  background: #f2f2f2;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+  padding: 16px;
+}
+
+.FailureDialog.open {
+  width: 320px;
+}
+
+.OpenCloseButton {
+  float: right;
+}
+
+.FailureTitle {
+  font-size: 18px;
+}
+
+.FailureRow {
+  display: flex;
+  flex-direction: row;
+}
+
+.Node {
+  padding: 4px;
+  margin: 2px;
+  border-radius: 8px;
+}
+
+.VulnerableNode {
+}
+
+.AffectedNode {
+  border: 1px solid grey;
+}

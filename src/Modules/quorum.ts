@@ -29,7 +29,7 @@ type Action =
   | { type: "UNKNOWN" };
 
 export function fetchQuorum(): Action {
-  return { type: "FETCH_QUORUM" };
+  return showExample("preHalt");
 }
 
 const examples: Map<ExampleKey, NetworkGraphNode[]> = new Map([
