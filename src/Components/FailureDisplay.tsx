@@ -1,47 +1,59 @@
-import React, { useCallback } from "react";
+import React, { useCallback, FunctionComponent } from "react";
 
 import { HaltingFailure } from "../util/HaltingAnalysis";
-import { useMappedState } from "redux-react-hook";
+import { selectFailure } from "../Modules/quorum";
+import { useMappedState, useDispatch } from "redux-react-hook";
+import s from "./FailureDisplay.module.css";
 
-const FailureDisplay = () => {
+import { NetworkGraphNode } from "../Types/NetworkTypes";
+
+const FailureDisplay: FunctionComponent = ({ children }) => {
   // Pull any quorum data out of our state
   const mapState = useCallback(state => {
-    return state.quorum.failures;
+    return {
+      list: state.quorum.failures,
+      selectedFailure: state.quorum.selectedFailure
+    };
   }, []);
-  const list = useMappedState<HaltingFailure[]>(mapState);
+  const { list, selectedFailure } = useMappedState<{
+    list: HaltingFailure[];
+    selectedFailure: HaltingFailure;
+  }>(mapState);
+  const dispatch = useDispatch();
 
-  if (list.length === 0) {
-    return (
-      <div>
-        <h3>No Failures</h3>
+  function nodeList(nodes: NetworkGraphNode[]) {
+    return nodes.map(node => (
+      <div key={node.node} className={`${s.VulnerableNode} ${s.Node}`}>
+        {node.node}
       </div>
-    );
+    ));
+  }
+  if (list.length === 0) {
+    return <div className={s.FailureTitle}>No Failures</div>;
   }
 
+  const click = (failure: HaltingFailure) => () => {
+    dispatch(selectFailure(failure));
+  };
   return (
-    <div>
-      <h3>Failures</h3>
-      {list.map(failure => {
-        const key = failure.affectedNodes.map(n => n.node).join(",");
-        return (
-          <div key={key}>
-            <b>
-              Losing{" "}
-              {failure.vulnerableNodes
-                .map(node => {
-                  return node.node;
-                })
-                .join(", ")}
-            </b>
-            <span> takes down </span>
-            {failure.affectedNodes
-              .map(node => {
-                return node.node;
-              })
-              .join(", ")}
-          </div>
-        );
-      })}
+    <div className={s.FailurePopup}>
+      <div className={s.FailureTitle}>Failures</div>
+      {children}
+      <div className={s.Grid}>
+        {list.map(failure => {
+          const key = failure.affectedNodes.map(n => n.node).join(",");
+          const selectedClass = failure === selectedFailure ? s.Selected : null;
+          return (
+            <div
+              onClick={click(failure)}
+              key={key}
+              className={[s.FailureRow, selectedClass].join(" ")}
+            >
+              {nodeList(failure.vulnerableNodes)}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };

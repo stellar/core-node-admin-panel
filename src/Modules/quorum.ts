@@ -23,13 +23,15 @@ type Action =
   | { type: "FETCH_QUORUM" }
   | {
       type: "USE_EXAMPLE";
+      name: string;
       data: NetworkGraphNode[];
       failures: HaltingFailure[];
     }
+  | { type: "SELECT_FAILURE"; data: HaltingFailure }
   | { type: "UNKNOWN" };
 
 export function fetchQuorum(): Action {
-  return { type: "FETCH_QUORUM" };
+  return showExample("preHalt");
 }
 
 const examples: Map<ExampleKey, NetworkGraphNode[]> = new Map([
@@ -46,13 +48,23 @@ export function showExample(example: string): Action {
     throw new Error("Unknown example key");
   }
   const failures = haltingAnalysis(nodes, 2);
-  return { type: "USE_EXAMPLE", data: nodes, failures: failures };
+  return {
+    type: "USE_EXAMPLE",
+    name: example,
+    data: nodes,
+    failures: failures
+  };
+}
+
+export function selectFailure(failure: HaltingFailure): Action {
+  return { type: "SELECT_FAILURE", data: failure };
 }
 
 export type QuorumStateShape = {
   transitiveQuorum: GraphData;
   validExamples: string[];
   failures: HaltingFailure[];
+  selectedFailure?: HaltingFailure;
 };
 
 export default function reducer(
@@ -62,20 +74,30 @@ export default function reducer(
       links: [],
       nodes: []
     },
-    failures: []
+    failures: [],
+    selectedFailure: undefined
   },
   action: Action = { type: "UNKNOWN" }
 ) {
   switch (action.type) {
     case "USE_EXAMPLE":
-      return Object.assign({}, state, {
+      return {
+        ...state,
         transitiveQuorum: networkNodesToGraphData(action.data),
-        failures: action.failures
-      });
+        failures: action.failures,
+        exampleName: action.name,
+        selectedFailure: action.failures[0]
+      };
     case "FETCH_QUORUM":
-      return Object.assign({}, state, {
+      return {
+        ...state,
         transitiveQuorum: networkNodesToGraphData(networkData.nodes)
-      });
+      };
+    case "SELECT_FAILURE":
+      return {
+        ...state,
+        selectedFailure: action.data
+      };
     default:
       return state;
   }

@@ -197,5 +197,9 @@ export function haltingAnalysis(
       });
     }
   });
-  return failureCases;
+
+  // Sort by vulnerable node length since we want to prioritize the most fragile cases
+  return failureCases.sort(
+    (a, b) => a.vulnerableNodes.length - b.vulnerableNodes.length
+  );
 }

@@ -52,6 +52,12 @@ const ForceGraph = (
   svg.html("");
   const w = parseInt(svg.attr("width"));
   const h = parseInt(svg.attr("height"));
+  const container = svg.append("g");
+  const zoom: d3.ZoomBehavior<SVGSVGElement, unknown> = d3.zoom();
+  zoom.scaleExtent([1 / 2, 8]).on("zoom", function() {
+    container.attr("transform", d3.event.transform);
+  });
+  svg.call(zoom);
 
   const links: SimLink[] = data.links.map((l: GraphLink) => {
     const link = {
@@ -88,12 +94,6 @@ const ForceGraph = (
     return simNode;
   });
 
-  const findTargets = (node: SimNode) => {
-    return links.filter(link => {
-      return link.source === node;
-    });
-  };
-
   const simulation: d3.Simulation<SimNode, SimLink> = d3
     .forceSimulation(nodes)
     .force("link", d3.forceLink<SimNode, SimLink>(links).id(n => n.id))
@@ -114,7 +114,7 @@ const ForceGraph = (
     };
 
     const dragEnd = (d: SimNode) => {
-      if (d3.event.active) sim.alphaTarget(0.5);
+      if (!d3.event.active) sim.alphaTarget(0);
       delete d.fx;
       delete d.fy;
     };
@@ -126,14 +126,14 @@ const ForceGraph = (
       .on("end", dragEnd);
   };
 
-  const link = svg
+  const link = container
     .append("g")
     .selectAll("line")
     .data(links)
     .join("line")
     .attr("class", LinkStyles.className);
 
-  const labels = svg
+  const labels = container
     .append("g")
     .selectAll("text")
     .data<SimNode>(nodes)
@@ -141,7 +141,7 @@ const ForceGraph = (
     .text(n => n.id)
     .attr("pointer-events", "none");
 
-  const nodeGroup = svg
+  const nodeGroup = container
     .append("g")
     .selectAll<SVGElement, SimNode>("circle")
     .data<SimNode>(nodes)
@@ -163,34 +163,6 @@ const ForceGraph = (
     })
     .append("text")
     .text(n => (n.live ? "😀" : "😭"));
-
-  nodeGroup.on("mouseover", function(d) {
-    if (this != null) {
-      d3.select<SVGElement, SimNode>(this as SVGElement)
-        .append("text")
-        .text((d: SimNode) => d.id)
-        .attr("transform", "translate(10,-10)");
-    }
-  });
-
-  nodeGroup.on("mouseout", function(d) {
-    d3.select(this)
-      .select("text")
-      .remove();
-  });
-
-  nodeGroup.on("mouseenter", node => {
-    const links = findTargets(node);
-    links.forEach(l => {
-      l.active = true;
-      (l.target as SimNode).active = true;
-    });
-  });
-
-  nodeGroup.on("mouseleave", node => {
-    links.forEach(l => (l.active = false));
-    nodes.forEach(n => (n.active = false));
-  });
 
   simulation.on("tick", () => {
     link

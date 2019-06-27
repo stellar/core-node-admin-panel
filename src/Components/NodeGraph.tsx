@@ -18,25 +18,36 @@ const NodeGraph = () => {
   const mapState = useCallback((state: { quorum: QuorumStateShape }) => {
     return {
       quorum: state.quorum.transitiveQuorum,
-      failures: state.quorum.failures
+      failures: state.quorum.failures,
+      selectedFailure: state.quorum.selectedFailure
     };
   }, []);
-  const data = useMappedState<{
+  const { quorum, selectedFailure } = useMappedState<{
     quorum: GraphData;
     failures: HaltingFailure[];
+    selectedFailure?: HaltingFailure;
   }>(mapState);
 
   // Update the svg with the new quorum state data
   const ref = useRef<SVGSVGElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (ref && ref.current) {
-      ForceGraph(ref.current, data.quorum, data.failures[0]);
+    if (ref && ref.current && containerRef.current) {
+      ref.current.setAttribute(
+        "width",
+        containerRef.current.offsetWidth + "px"
+      );
+      ref.current.setAttribute(
+        "height",
+        containerRef.current.offsetHeight + "px"
+      );
+
+      ForceGraph(ref.current, quorum, selectedFailure);
     }
-  }, [ref, data]);
+  }, [ref, quorum, selectedFailure]);
 
   return (
-    <div>
-      <h1>Stellar Node Graph</h1>
+    <div style={{ height: "100%" }} ref={containerRef}>
       <svg width={640} height={480} ref={ref} />
     </div>
   );
