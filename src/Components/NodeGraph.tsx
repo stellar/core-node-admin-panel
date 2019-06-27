@@ -18,12 +18,14 @@ const NodeGraph = () => {
   const mapState = useCallback((state: { quorum: QuorumStateShape }) => {
     return {
       quorum: state.quorum.transitiveQuorum,
-      failures: state.quorum.failures
+      failures: state.quorum.failures,
+      selectedFailure: state.quorum.selectedFailure
     };
   }, []);
-  const data = useMappedState<{
+  const { quorum, selectedFailure } = useMappedState<{
     quorum: GraphData;
     failures: HaltingFailure[];
+    selectedFailure?: HaltingFailure;
   }>(mapState);
 
   // Update the svg with the new quorum state data
@@ -40,9 +42,9 @@ const NodeGraph = () => {
         containerRef.current.offsetHeight + "px"
       );
 
-      ForceGraph(ref.current, data.quorum, data.failures[0]);
+      ForceGraph(ref.current, quorum, selectedFailure);
     }
-  }, [ref, data]);
+  }, [ref, quorum, selectedFailure]);
 
   return (
     <div style={{ height: "100%" }} ref={containerRef}>

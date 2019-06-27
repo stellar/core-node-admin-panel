@@ -26,6 +26,7 @@ type Action =
       data: NetworkGraphNode[];
       failures: HaltingFailure[];
     }
+  | { type: "SELECT_FAILURE"; data: HaltingFailure }
   | { type: "UNKNOWN" };
 
 export function fetchQuorum(): Action {
@@ -49,10 +50,15 @@ export function showExample(example: string): Action {
   return { type: "USE_EXAMPLE", data: nodes, failures: failures };
 }
 
+export function selectFailure(failure: HaltingFailure): Action {
+  return { type: "SELECT_FAILURE", data: failure };
+}
+
 export type QuorumStateShape = {
   transitiveQuorum: GraphData;
   validExamples: string[];
   failures: HaltingFailure[];
+  selectedFailure?: HaltingFailure;
 };
 
 export default function reducer(
@@ -62,20 +68,29 @@ export default function reducer(
       links: [],
       nodes: []
     },
-    failures: []
+    failures: [],
+    selectedFailure: undefined
   },
   action: Action = { type: "UNKNOWN" }
 ) {
   switch (action.type) {
     case "USE_EXAMPLE":
-      return Object.assign({}, state, {
+      return {
+        ...state,
         transitiveQuorum: networkNodesToGraphData(action.data),
-        failures: action.failures
-      });
+        failures: action.failures,
+        selectedFailure: action.failures[0]
+      };
     case "FETCH_QUORUM":
-      return Object.assign({}, state, {
+      return {
+        ...state,
         transitiveQuorum: networkNodesToGraphData(networkData.nodes)
-      });
+      };
+    case "SELECT_FAILURE":
+      return {
+        ...state,
+        selectedFailure: action.data
+      };
     default:
       return state;
   }
