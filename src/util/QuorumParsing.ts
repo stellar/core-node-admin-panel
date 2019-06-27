@@ -1,6 +1,11 @@
 import { GraphData } from "../Types/GraphTypes";
 import { NetworkGraphNode, QuorumSet } from "../Types/NetworkTypes";
 
+// Type guards for determining dependency types
+function isQuorumSet(n: string | QuorumSet): n is QuorumSet {
+  return (n as QuorumSet).v !== undefined;
+}
+
 export function networkNodesToGraphData(nodes: NetworkGraphNode[]): GraphData {
   let data: GraphData = {
     nodes: nodes.map(ngn => Object.assign({}, ngn, { id: ngn.node })),
@@ -11,15 +16,13 @@ export function networkNodesToGraphData(nodes: NetworkGraphNode[]): GraphData {
 
     const applyQuorumSetToNode = (node: NetworkGraphNode, set: QuorumSet) => {
       let quorum = set.v;
-      if (quorum[0] && quorum[0] instanceof Object) {
-        (quorum as QuorumSet[]).forEach(quorumSet => {
-          applyQuorumSetToNode(node, quorumSet);
-        });
-      } else {
-        (set.v as string[]).forEach(validator => {
-          targetValidatorNames.push(validator);
-        });
-      }
+      quorum.forEach(quorumEntry => {
+        if (isQuorumSet(quorumEntry)) {
+          applyQuorumSetToNode(node, quorumEntry);
+        } else {
+          targetValidatorNames.push(quorumEntry);
+        }
+      });
     };
 
     if (node.qset) {
@@ -27,6 +30,10 @@ export function networkNodesToGraphData(nodes: NetworkGraphNode[]): GraphData {
     }
 
     targetValidatorNames.forEach(target => {
+      if (typeof target !== "string") {
+        console.log("Source", node.node);
+        console.log(target);
+      }
       data.links.push({
         source: node.node,
         target: target

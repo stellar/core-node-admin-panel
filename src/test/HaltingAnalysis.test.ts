@@ -1,7 +1,8 @@
 import {
   haltingAnalysis,
   createAnalysisStructure,
-  generateCombinations
+  generateCombinations,
+  HaltingFailure
 } from "../util/HaltingAnalysis";
 import healthy from "./data/HealthyQuorum";
 import healthySubquorums from "./data/HealthySubquorums";
@@ -10,6 +11,7 @@ import cyclical from "./data/CyclicalUnhealthy";
 import mixed from "./data/MixedQuorumType";
 import missing from "./data/MissingNodes";
 import twonode from "./data/TwoNodeFailure";
+import prehalt from "./data/PreHalt";
 import {
   simple as simpleSubquorum,
   complex as complexSubquorum
@@ -97,6 +99,15 @@ describe("halting analysis", () => {
     const nodes = ["a", "b", "c", "d", "e"];
     const sets = generateCombinations(nodes, 3);
     expect(sets).toHaveLength(25); // 5choose3 + 5choose2 + 5choose1 = 10 + 10 + 5
+  });
+
+  it("must find failure cases in PreHalt quorums", () => {
+    const fc = haltingAnalysis(prehalt, 2);
+    expect(fc).not.toHaveLength(0);
+    const sdfFailureCase = fc.find(failure => {
+      return !!failure.vulnerableNodes.find(n => n.node === "SDF_validator_1");
+    });
+    expect(sdfFailureCase).toBeDefined();
   });
 });
 

@@ -6,10 +6,12 @@
 
 .node.dead {
   stroke: red;
+  fill: #fecccc;
 }
 
 .node[data-vulnerable="true"] {
   animation: nodepulse 1s ease-out infinite;
+  fill: white;
 }
 
 @keyframes nodepulse {
@@ -28,6 +30,10 @@
 
 .node.self + text {
   transform: translate(-9px, 7px);
+  font-size: 20px;
+}
+text {
+  font-size: 10px;
 }
 
 .link {
