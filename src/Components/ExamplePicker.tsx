@@ -9,9 +9,15 @@ const ExamplePicker = () => {
   const dispatch = useDispatch();
   // Pull any quorum data out of our state
   const mapState = useCallback(state => {
-    return state.quorum.validExamples;
+    return {
+      selected: state.quorum.exampleName,
+      list: state.quorum.validExamples
+    };
   }, []);
-  const list = useMappedState<string[]>(mapState);
+  const { list, selected } = useMappedState<{
+    list: string[];
+    selected: string;
+  }>(mapState);
 
   const onChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     dispatch(showExample(e.target.value));
@@ -22,7 +28,7 @@ const ExamplePicker = () => {
       <select className={s.Picker} onChange={onChange}>
         <option key="Nothing">Select an example graph</option>
         {list.map(example => (
-          <option value={example} key={example}>
+          <option value={example} key={example} selected={selected === example}>
             {example}
           </option>
         ))}

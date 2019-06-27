@@ -23,6 +23,7 @@ type Action =
   | { type: "FETCH_QUORUM" }
   | {
       type: "USE_EXAMPLE";
+      name: string;
       data: NetworkGraphNode[];
       failures: HaltingFailure[];
     }
@@ -47,7 +48,12 @@ export function showExample(example: string): Action {
     throw new Error("Unknown example key");
   }
   const failures = haltingAnalysis(nodes, 2);
-  return { type: "USE_EXAMPLE", data: nodes, failures: failures };
+  return {
+    type: "USE_EXAMPLE",
+    name: example,
+    data: nodes,
+    failures: failures
+  };
 }
 
 export function selectFailure(failure: HaltingFailure): Action {
@@ -79,6 +85,7 @@ export default function reducer(
         ...state,
         transitiveQuorum: networkNodesToGraphData(action.data),
         failures: action.failures,
+        exampleName: action.name,
         selectedFailure: action.failures[0]
       };
     case "FETCH_QUORUM":
