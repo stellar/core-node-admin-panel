@@ -20,7 +20,6 @@ const ExamplePicker = () => {
   }>(mapState);
 
   const onChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    console.log(e.target.value);
     if (e.target.value === "") return;
     dispatch(showExample(e.target.value));
   };
