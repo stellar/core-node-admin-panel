@@ -11,6 +11,10 @@
   width: 320px;
 }
 
+.FailurePopup > div {
+  margin-bottom: 8px;
+}
+
 .OpenCloseButton {
   float: right;
 }
@@ -22,10 +26,21 @@
 .FailureRow {
   display: flex;
   flex-direction: row;
+  border: 3px solid transparent;
+  padding: 4px;
+  font-size: 12px;
+}
+
+.FailureRow div:nth-child(n + 2):before {
+  content: " + ";
+}
+
+.Selected {
+  background: rgba(0, 0, 0, 0.1);
+  border-left: 3px solid rgba(80, 80, 80, 0.3);
 }
 
 .Node {
-  padding: 4px;
   margin: 2px;
   border-radius: 8px;
 }
@@ -35,8 +50,4 @@
 
 .AffectedNode {
   border: 1px solid grey;
-}
-
-.Selected {
-  background: rgba(0, 0, 0, 0.3);
 }

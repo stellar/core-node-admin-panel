@@ -36,7 +36,7 @@ const FailureDisplay: FunctionComponent = ({ children }) => {
     dispatch(selectFailure(failure));
   };
   return (
-    <>
+    <div className={s.FailurePopup}>
       <div className={s.FailureTitle}>Failures</div>
       {children}
       <div className={s.Grid}>
@@ -54,7 +54,7 @@ const FailureDisplay: FunctionComponent = ({ children }) => {
           );
         })}
       </div>
-    </>
+    </div>
   );
 };
 
