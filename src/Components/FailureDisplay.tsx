@@ -58,13 +58,4 @@ const FailureDisplay: FunctionComponent = ({ children }) => {
   );
 };
 
-/* <details>
-                <summary>Affected Nodes</summary>
-                {failure.affectedNodes.map(node => (
-                  <div className={`${s.AffectedNode} ${s.Node}`}>
-                    {node.node}
-                  </div>
-                ))}
-              </details> */
-
 export default FailureDisplay;
