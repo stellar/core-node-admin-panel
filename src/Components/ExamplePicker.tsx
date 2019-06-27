@@ -20,15 +20,19 @@ const ExamplePicker = () => {
   }>(mapState);
 
   const onChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    console.log(e.target.value);
+    if (e.target.value === "") return;
     dispatch(showExample(e.target.value));
   };
 
   return (
     <div>
-      <select className={s.Picker} onChange={onChange}>
-        <option key="Nothing">Select an example graph</option>
+      <select value={selected} className={s.Picker} onChange={onChange}>
+        <option value="" key="Nothing">
+          Select an example graph
+        </option>
         {list.map(example => (
-          <option value={example} key={example} selected={selected === example}>
+          <option value={example} key={example}>
             {example}
           </option>
         ))}
