@@ -138,6 +138,8 @@ export function haltingAnalysis(
   failureSets.forEach(nodesToHalt => {
     if (nodesToHalt.indexOf(root) !== -1) return;
 
+    // Don't search a node set if there's an existing failure case with a subset of these nodes.
+    // IE no need to test (NodeA U NodeB) for failure if we know (NodeA) alone will already cause it.
     if (
       failureCases.some(fc =>
         fc.vulnerableNodes.every(n =>
