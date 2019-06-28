@@ -30,10 +30,6 @@ export function networkNodesToGraphData(nodes: NetworkGraphNode[]): GraphData {
     }
 
     targetValidatorNames.forEach(target => {
-      if (typeof target !== "string") {
-        console.log("Source", node.node);
-        console.log(target);
-      }
       data.links.push({
         source: node.node,
         target: target
