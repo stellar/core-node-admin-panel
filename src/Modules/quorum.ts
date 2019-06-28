@@ -47,7 +47,7 @@ export function showExample(example: string): Action {
   if (!nodes) {
     throw new Error("Unknown example key");
   }
-  const failures = haltingAnalysis(nodes, 2);
+  const failures = haltingAnalysis(nodes, 3);
   return {
     type: "USE_EXAMPLE",
     name: example,

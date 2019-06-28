@@ -114,7 +114,7 @@ export function generateCombinations<T>(items: T[], maxSize: number): (T[])[] {
     const otherCombos = generateCombinations(others, maxSize - 1);
     otherCombos.forEach(otherCombo => results.push([item, ...otherCombo]));
   });
-  return results;
+  return results.sort((a, b) => a.length - b.length);
 }
 
 /*
@@ -138,6 +138,15 @@ export function haltingAnalysis(
   failureSets.forEach(nodesToHalt => {
     if (nodesToHalt.indexOf(root) !== -1) return;
 
+    if (
+      failureCases.some(fc =>
+        fc.vulnerableNodes.every(n =>
+          nodesToHalt.some(an => an.networkObject === n)
+        )
+      )
+    ) {
+      return;
+    }
     reset(analysisNodes);
 
     let deadNodes: NetworkGraphNode[] = [];
