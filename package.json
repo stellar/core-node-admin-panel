@@ -9,6 +9,7 @@
     "@types/react": "16.8.19",
     "@types/react-dom": "16.8.4",
     "@types/react-redux": "^7.1.0",
+    "axios": "^0.19.0",
     "d3": "^5.9.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
@@ -17,9 +18,13 @@
     "redux": "^4.0.1",
     "redux-react-hook": "^3.3.2",
     "redux-thunk": "^2.3.0",
+    "restify": "^8.3.3",
+    "restify-cors-middleware": "^1.1.1",
     "typescript": "3.5.1"
   },
   "scripts": {
+    "backend": "node backend/server.js",
+    "backend:dev": "nodemon backend/server.js",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -43,6 +48,7 @@
   },
   "devDependencies": {
     "husky": "^2.4.1",
+    "nodemon": "^1.19.1",
     "prettier": "1.18.2",
     "pretty-quick": "^1.11.0",
     "ts-jest": "^24.0.2"

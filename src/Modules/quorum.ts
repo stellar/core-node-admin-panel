@@ -3,6 +3,8 @@ import { NetworkGraphNode } from "../Types/NetworkTypes";
 import dummydata from "../test/data/ServerDefaults";
 import { networkNodesToGraphData } from "../util/QuorumParsing";
 import { haltingAnalysis, HaltingFailure } from "../util/HaltingAnalysis";
+import axios from "axios";
+import { Dispatch } from "redux";
 
 import healthy from "../test/data/HealthyQuorum";
 import highlyDependent from "../test/data/HighlyDependent";
@@ -13,6 +15,7 @@ import preHalt from "../test/data/PreHalt";
 const networkData = dummydata as { nodes: NetworkGraphNode[] };
 
 type ExampleKey =
+  | "actual"
   | "healthy"
   | "halfDead"
   | "highlyDependent"
@@ -30,11 +33,17 @@ type Action =
   | { type: "SELECT_FAILURE"; data: HaltingFailure }
   | { type: "UNKNOWN" };
 
-export function fetchQuorum(): Action {
-  return showExample("preHalt");
+export function fetchQuorum() {
+  return async (dispatch: Dispatch) => {
+    const response = await axios.get("http://localhost:8080/quorum");
+    const nodes = response.data.nodes as NetworkGraphNode[];
+    const failures = haltingAnalysis(nodes, 2);
+    dispatch({ type: "USE_EXAMPLE", name: "actual", data: nodes, failures });
+  };
 }
 
 const examples: Map<ExampleKey, NetworkGraphNode[]> = new Map([
+  ["actual", []],
   ["healthy", healthy],
   ["halfDead", halfDead],
   ["highlyDependent", highlyDependent],
@@ -42,7 +51,12 @@ const examples: Map<ExampleKey, NetworkGraphNode[]> = new Map([
   ["preHalt", preHalt]
 ]);
 
-export function showExample(example: string): Action {
+export function showExample(
+  example: string
+): Action | ((d: Dispatch) => Promise<void>) {
+  if (example === "actual") {
+    return fetchQuorum();
+  }
   const nodes = examples.get(example as ExampleKey);
   if (!nodes) {
     throw new Error("Unknown example key");
@@ -65,6 +79,7 @@ export type QuorumStateShape = {
   validExamples: string[];
   failures: HaltingFailure[];
   selectedFailure?: HaltingFailure;
+  exampleName: string;
 };
 
 export default function reducer(
@@ -75,6 +90,7 @@ export default function reducer(
       nodes: []
     },
     failures: [],
+    exampleName: "liveData",
     selectedFailure: undefined
   },
   action: Action = { type: "UNKNOWN" }
