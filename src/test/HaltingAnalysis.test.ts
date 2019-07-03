@@ -38,6 +38,14 @@ describe("halting analysis", () => {
     expect(affected).toContain("d");
   });
 
+  it("must not return supersets of existing failure cases", () => {
+    const failureCases = haltingAnalysis(highlyDependent, 2);
+    // Would return 7 if we were returning failure cases with e+something else
+    // expect e, b+c, b+d, c+d
+    // and filter out e+b, e+c, e+d
+    expect(failureCases).toHaveLength(4);
+  });
+
   it("must return failures for nested transitive quorum sets", () => {
     const failureCases = haltingAnalysis(simpleSubquorum);
     expect(failureCases).toHaveLength(1);
