@@ -1,5 +1,6 @@
 {
     "hooks": {
-        "pre-commit": "pretty-quick --staged"
+        "pre-commit": "pretty-quick --staged",
+        "post-checkout": "node ./copy-setup-files.js"
     }
 }
