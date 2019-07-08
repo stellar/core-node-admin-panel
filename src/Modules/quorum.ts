@@ -3,7 +3,7 @@ import { NetworkGraphNode } from "../Types/NetworkTypes";
 import dummydata from "../test/data/ServerDefaults";
 import { networkNodesToGraphData } from "../util/QuorumParsing";
 import { haltingAnalysis, HaltingFailure } from "../util/HaltingAnalysis";
-import axios from "axios";
+import ProxyService from "./ProxyService";
 import { Dispatch } from "redux";
 
 import healthy from "../test/data/HealthyQuorum";
@@ -35,7 +35,8 @@ type Action =
 
 export function fetchQuorum() {
   return async (dispatch: Dispatch) => {
-    const response = await axios.get("http://localhost:8080/quorum");
+    console.log("SERVER", process.env.REACT_APP_SERVER_URL);
+    const response = await ProxyService.get("/quorum");
     const nodes = response.data.nodes as NetworkGraphNode[];
     const failures = haltingAnalysis(nodes, 2);
     dispatch({ type: "USE_EXAMPLE", name: "actual", data: nodes, failures });

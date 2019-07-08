@@ -18,6 +18,6 @@ server.get("/quorum", async (req, res, next) => {
   next();
 });
 
-server.listen(process.env.SERVER_PORT, function() {
+server.listen(process.env.REACT_APP_SERVER_PORT, function() {
   console.log("Server listening at %s", server.url);
 });
