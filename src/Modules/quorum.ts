@@ -35,7 +35,6 @@ type Action =
 
 export function fetchQuorum() {
   return async (dispatch: Dispatch) => {
-    console.log("SERVER", process.env.REACT_APP_SERVER_URL);
     const response = await ProxyService.get("/quorum");
     const nodes = response.data.nodes as NetworkGraphNode[];
     const failures = haltingAnalysis(nodes, 2);
