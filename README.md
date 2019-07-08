@@ -1,7 +1,7 @@
 ## Getting Started
 
 Copy `.env.example` to `.env` and ensure the values match your stellar-core instance.
-`npm start`
+`npm run dev` To start the proxy server and the front-end.
 
 # core-node-admin-panel
 
