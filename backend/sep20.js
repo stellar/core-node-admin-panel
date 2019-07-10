@@ -13,17 +13,16 @@ const lookup = async function(nodeId) {
   const homeDomain = accountResp.data.home_domain;
   // This key doesn't set a homeDomain option, it doesn't support sep20
   if (!homeDomain) return null;
+
   const tomlURL = `http://${homeDomain}/.well-known/stellar.toml`;
   const tomlResp = await axios.get(tomlURL);
   const toml = tomlResp.data;
   const lines = toml.split("\n");
-
   // Check to ensure the toml matches the public key
   let verified = false;
   lines.forEach(line => {
     const parts = line.split("=");
     const nodeStr = `"${nodeId}"`;
-
     if (parts[0] === "PUBLIC_KEY" && parts[1] === nodeStr) {
       verified = true;
     }
