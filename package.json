@@ -27,6 +27,7 @@
     "dev": "concurrently --kill-others \"npm run start\" \"npm run backend:dev\"",
     "backend": "node backend/server.js",
     "backend:dev": "nodemon backend/server.js",
+    "backend:test": "jest backend --watchAll",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -49,6 +50,7 @@
     ]
   },
   "devDependencies": {
+    "axios-mock-adapter": "^1.17.0",
     "concurrently": "^4.1.1",
     "husky": "^2.4.1",
     "nodemon": "^1.19.1",
