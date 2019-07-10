@@ -11,6 +11,7 @@ const lookup = async function(nodeId) {
     return null;
   }
   const homeDomain = accountResp.data.home_domain;
+  // This key doesn't set a homeDomain option, it doesn't support sep20
   if (!homeDomain) return null;
   const tomlURL = `http://${homeDomain}/.well-known/stellar.toml`;
   const tomlResp = await axios.get(tomlURL);
