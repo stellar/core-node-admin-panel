@@ -19,6 +19,14 @@ describe("sep20", () => {
     });
   });
 
+  it("returns null for a node id with no home domain set", () => {
+    const nohomedomain =
+      "NOHOMEDOMAIN00000000000000000000000000000000000000000000";
+    return lookup(nohomedomain).then(homeDomain => {
+      expect(homeDomain).toBeNull();
+    });
+  });
+
   it("throws for an account that points to  a home domain that doesn't validate", async () => {
     const imposter = "IMPOSTERKEY000000000000000000000000000000000000000000000";
     return await expect(lookup(imposter)).rejects.toThrow();
