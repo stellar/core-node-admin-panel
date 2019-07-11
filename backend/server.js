@@ -12,7 +12,7 @@ server.use(cors.actual);
 console.log(process.env.CORE_URL);
 server.get("/quorum", async (req, res, next) => {
   const response = await axios.get(
-    `http://${process.env.CORE_URL}/quorum?transitive=true`
+    `http://${process.env.CORE_URL}/quorum?transitive=true&fullkeys=true`
   );
   res.send(response.data);
   next();
