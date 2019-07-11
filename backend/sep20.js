@@ -1,4 +1,5 @@
 const axios = require("axios");
+const TOML = require("toml");
 
 const lookup = async function(nodeId) {
   let accountResp;
@@ -7,7 +8,7 @@ const lookup = async function(nodeId) {
       `https://horizon.stellar.org/accounts/${nodeId}`
     );
   } catch (e) {
-    // This key doens't exist on the ledger, it doesn't support SEP20
+    // This key doesn't exist on the ledger, it doesn't support SEP20
     return null;
   }
   const homeDomain = accountResp.data.home_domain;
@@ -16,17 +17,16 @@ const lookup = async function(nodeId) {
 
   const tomlURL = `http://${homeDomain}/.well-known/stellar.toml`;
   const tomlResp = await axios.get(tomlURL);
-  const toml = tomlResp.data;
-  const lines = toml.split("\n");
-  // Check to ensure the toml matches the public key
+  const toml = TOML.parse(tomlResp.data);
+
+  // Check to ensure the toml has a validator that matches the public key
   let verified = false;
-  lines.forEach(line => {
-    const parts = line.split("=");
-    const nodeStr = `"${nodeId}"`;
-    if (parts[0] === "PUBLIC_KEY" && parts[1] === nodeStr) {
+  toml.VALIDATORS.forEach(validator => {
+    if (validator.PUBLIC_KEY === nodeId) {
       verified = true;
     }
   });
+
   if (verified) {
     return homeDomain;
   }
