@@ -6,8 +6,9 @@ describe("sep20", () => {
   it("finds sdf node", () => {
     const sdfvalidator1 =
       "GCGB2S2KGYARPVIA37HYZXVRM2YZUEXA6S33ZU5BUDC6THSB62LZSTYH";
-    return lookup(sdfvalidator1).then(homeDomain => {
-      expect(homeDomain).toEqual("www.stellar.org");
+    return lookup(sdfvalidator1).then(info => {
+      expect(info.homeDomain).toEqual("www.stellar.org");
+      expect(info.organization).toEqual("Stellar Development Foundation");
     });
   });
 
