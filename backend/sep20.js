@@ -28,7 +28,10 @@ const lookup = async function(nodeId) {
   });
 
   if (verified) {
-    return homeDomain;
+    return {
+      homeDomain,
+      organization: toml.DOCUMENTATION.ORG_NAME
+    };
   }
   // If the toml didn't verify the public key it could be a pretender
   throw new Error("Home Domain not verified on node " + nodeId);
