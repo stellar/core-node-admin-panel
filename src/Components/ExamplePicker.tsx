@@ -1,6 +1,5 @@
 import React, { useCallback } from "react";
 
-import { showExample } from "../Modules/quorum";
 import { useDispatch } from "redux-react-hook";
 import { useMappedState } from "redux-react-hook";
 import s from "./ExamplePicker.module.css";
@@ -21,7 +20,6 @@ const ExamplePicker = () => {
 
   const onChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (e.target.value === "") return;
-    dispatch(showExample(e.target.value));
   };
 
   return (

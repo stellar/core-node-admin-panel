@@ -10,9 +10,7 @@ const App: React.FC = () => {
     <React.Fragment>
       <Header />
       <InfoPanel>
-        <FailureDisplay>
-          <ExamplePicker />
-        </FailureDisplay>
+        <FailureDisplay></FailureDisplay>
       </InfoPanel>
       <NodeGraph />
     </React.Fragment>

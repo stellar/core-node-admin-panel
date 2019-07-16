@@ -1,11 +1,9 @@
 import React, { useCallback, FunctionComponent } from "react";
 
-import { HaltingFailure } from "../util/HaltingAnalysis";
+import { HaltingFailure, NetworkGraphNode } from "@stellar/halting-analysis";
 import { selectFailure } from "../Modules/quorum";
 import { useMappedState, useDispatch } from "redux-react-hook";
 import s from "./FailureDisplay.module.css";
-
-import { NetworkGraphNode } from "../Types/NetworkTypes";
 
 const FailureDisplay: FunctionComponent = ({ children }) => {
   // Pull any quorum data out of our state

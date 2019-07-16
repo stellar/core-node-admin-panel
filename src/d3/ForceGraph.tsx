@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { GraphData, GraphNode, GraphLink } from "../Types/GraphTypes";
-import { HaltingFailure } from "../util/HaltingAnalysis";
+import { HaltingFailure } from "@stellar/halting-analysis";
 
 const SimValues = {
   ManyBodyStrength: -700
