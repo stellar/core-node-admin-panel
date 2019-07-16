@@ -1,4 +1,4 @@
-import { NetworkGraphNode } from "./NetworkTypes";
+import { NetworkGraphNode } from "@stellar/halting-analysis";
 
 export interface GraphNode extends NetworkGraphNode {
   id: string;

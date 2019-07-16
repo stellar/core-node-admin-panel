@@ -5,7 +5,7 @@ import { QuorumStateShape, fetchQuorum } from "../Modules/quorum";
 import { useDispatch } from "redux-react-hook";
 import { useMappedState } from "redux-react-hook";
 import { GraphData } from "../Types/GraphTypes";
-import { HaltingFailure } from "../util/HaltingAnalysis";
+import { HaltingFailure } from "@stellar/halting-analysis";
 
 const NodeGraph = () => {
   const dispatch = useDispatch();

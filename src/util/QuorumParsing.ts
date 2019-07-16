@@ -1,5 +1,5 @@
 import { GraphData } from "../Types/GraphTypes";
-import { NetworkGraphNode, QuorumSet } from "../Types/NetworkTypes";
+import { NetworkGraphNode, QuorumSet } from "@stellar/halting-analysis";
 
 // Type guards for determining dependency types
 function isQuorumSet(n: string | QuorumSet): n is QuorumSet {
